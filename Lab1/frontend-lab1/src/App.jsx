@@ -1,10 +1,11 @@
 import {createBrowserRouter, RouterProvider} from "react-router-dom"
 import Groups from "./pages/Groups.jsx";
 import Root from "./components/Root.jsx";
-import Authentication from "./pages/Authentication.jsx";
 import ErrorPage from "./pages/ErrorPage.jsx";
 import Home from "./pages/Home.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
+import SignInPage from "./pages/SignInPage.jsx";
+import SignUpPage from "./pages/SignUpPage.jsx";
 
 function App() {
 
@@ -27,8 +28,12 @@ function App() {
                   element: <AdminPanel/>
                 },
                 {
-                    path: '/auth',
-                    element: <Authentication />
+                    path: '/sign-in',
+                    element: <SignInPage />
+                },
+                {
+                    path: '/sign-up',
+                    element: <SignUpPage />
                 },
             ]
         },

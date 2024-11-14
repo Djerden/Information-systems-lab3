@@ -37,7 +37,7 @@ export default function Header() {
 
             {/* Правая сторона с именем пользователя и иконкой */}
             {/* Правая сторона с именем пользователя и иконкой */}
-            <NavLink to="/auth" className="flex items-center space-x-2 hover:text-indigo-400">
+            <NavLink to="/sign-in" className="flex items-center space-x-2 hover:text-indigo-400">
                 <span className="font-medium">{userName}</span>
                 <FaUserCircle className="text-3xl text-indigo-400" />
             </NavLink>

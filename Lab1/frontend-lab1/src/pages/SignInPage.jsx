@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import { Form, useNavigate } from 'react-router-dom';
 
-export default function AuthForm() {
+export default function SignInPage() {
 
     const [user, setUser] = useState({
         username: null,
         password: null
     });
+    const [error, setError] = useState(null); // состояние для хранения ошибки
     const navigate = useNavigate()
 
 
     // функция переключения страниц аутентификации и регистрации
     function switchAuthHandler() {
-        navigate('/signup')
+        navigate('/sign-up')
     }
     function toMainPage() {
         navigate('/')
@@ -26,31 +27,38 @@ export default function AuthForm() {
         }));
     }
 
-    // функция для отправки данных при аутентификации
     function handleLogin(e) {
         e.preventDefault();
-        fetch('http//localhost:8080/login', {
+        setError(null); // Сброс ошибки перед запросом
+
+        fetch('http://localhost:8080/auth/sign-in', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(user)
         })
-            .then(res => {
+            .then(async (res) => {
+                // Проверка успешного ответа
                 if (!res.ok) {
-                    throw new Error('Network response was not ok')
+                    const errorData = await res.json(); // Получаем текст ошибки из тела ответа
+                    throw new Error(errorData.message || 'Ошибка авторизации');
                 }
-                return res.headers.get('authorization')
+
+                // Извлечение токена из заголовка
+                const jwtToken = res.headers.get('authorization');
+
+                // Если токен отсутствует, бросаем ошибку
+                if (!jwtToken) {
+                    throw new Error('Токен не получен');
+                }
+
+                sessionStorage.setItem('jwt', jwtToken); // Сохраняем токен
+                console.log('auth success');
+                console.log(jwtToken);
+                toMainPage(); // Переход на главную страницу
             })
-            .then(jwtToken => {
-                if (jwtToken) {
-                    sessionStorage.setItem('jwt', jwtToken);
-                    setIsAuth(true);
-                    console.log('auth success');
-                    toMainPage();
-                }
-        })
-            .catch(err => console.log(err));
+            .catch(err => setError(err.message)); // Отображаем сообщение об ошибке
     }
 
     return (
@@ -59,6 +67,12 @@ export default function AuthForm() {
                 <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
                     Log in
                 </h1>
+
+                {error && ( // отображаем сообщение об ошибке, если оно есть
+                    <div className="mb-4 text-red-500 text-center">
+                        {error}
+                    </div>
+                )}
 
                 <div className="mb-4">
                     <label htmlFor="username" className="block text-gray-600 font-medium mb-1">Username</label>
@@ -105,5 +119,3 @@ export default function AuthForm() {
         </div>
     );
 }
-
-
