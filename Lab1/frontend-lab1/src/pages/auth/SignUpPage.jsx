@@ -17,7 +17,7 @@ export default function SignUpPage() {
     }
 
     function toMainPage() {
-        navigate('/');
+        navigate('/groups');
     }
 
     // Функция обновления параметров username, password и confirmPassword, когда пользователь изменяет поля ввода
@@ -42,29 +42,33 @@ export default function SignUpPage() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: user.username, password: user.password })
-        })
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return res.headers.get('authorization'); // Предполагаем, что JWT возвращается в заголовке
+            body: JSON.stringify({
+                username: user.username,
+                password: user.password
             })
-            .then(jwtToken => {
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'An error occurred during registration');
+                }
+                return response.json();
+            })
+            .then(responseData => {
+                const jwtToken = responseData.token; // JWT токен находится в теле ответа
                 if (jwtToken) {
                     sessionStorage.setItem('jwt', jwtToken); // Сохраняем токен в sessionStorage
-                    console.log('Registration and authentication successful');
-                    console.log(jwtToken)
-                    toMainPage(); // Перенаправляем на главную страницу после успешной регистрации
+                    toMainPage(); // Переход на главную страницу
                 } else {
                     setError("Failed to receive token");
                 }
             })
             .catch(err => {
-                console.log(err);
-                setError("An error occurred during registration");
+                console.error(err);
+                setError(err.message || "An error occurred during registration");
             });
     }
+
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">

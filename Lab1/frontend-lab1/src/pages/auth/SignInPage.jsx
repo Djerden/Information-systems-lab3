@@ -8,16 +8,8 @@ export default function SignInPage() {
         password: null
     });
     const [error, setError] = useState(null); // состояние для хранения ошибки
+
     const navigate = useNavigate()
-
-
-    // функция переключения страниц аутентификации и регистрации
-    function switchAuthHandler() {
-        navigate('/sign-up')
-    }
-    function toMainPage() {
-        navigate('/')
-    }
 
     // функция обновления параметров username и password, когда пользователь изменяет поля ввода
     function handleChange(param, value) {
@@ -27,6 +19,15 @@ export default function SignInPage() {
         }));
     }
 
+    // функция переключения страниц аутентификации и регистрации
+    function switchAuthHandler() {
+        navigate('/sign-up')
+    }
+    function toMainPage() {
+        navigate('/groups')
+    }
+
+    // Запрос для аутентификации
     function handleLogin(e) {
         e.preventDefault();
         setError(null); // Сброс ошибки перед запросом
@@ -39,27 +40,30 @@ export default function SignInPage() {
             body: JSON.stringify(user)
         })
             .then(async (res) => {
-                // Проверка успешного ответа
+                console.log(res); // Просмотр объекта ответа
+                const responseBody = await res.json(); // Получаем тело ответа
+                console.log(responseBody);
+
                 if (!res.ok) {
-                    const errorData = await res.json(); // Получаем текст ошибки из тела ответа
-                    throw new Error(errorData.message || 'Ошибка авторизации');
+                    // Если ответ не успешный, выбрасываем ошибку с сообщением
+                    throw new Error(responseBody.message || 'Ошибка авторизации');
                 }
 
-                // Извлечение токена из заголовка
-                const jwtToken = res.headers.get('authorization');
+                // Извлекаем токен из тела ответа
+                const jwtToken = responseBody.token;
 
-                // Если токен отсутствует, бросаем ошибку
                 if (!jwtToken) {
                     throw new Error('Токен не получен');
                 }
 
-                sessionStorage.setItem('jwt', jwtToken); // Сохраняем токен
+                sessionStorage.setItem('jwt', jwtToken); // Сохраняем токен в sessionStorage
                 console.log('auth success');
                 console.log(jwtToken);
                 toMainPage(); // Переход на главную страницу
             })
             .catch(err => setError(err.message)); // Отображаем сообщение об ошибке
     }
+
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
