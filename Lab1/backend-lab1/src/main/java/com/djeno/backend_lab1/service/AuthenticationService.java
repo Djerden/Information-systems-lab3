@@ -3,6 +3,7 @@ package com.djeno.backend_lab1.service;
 import com.djeno.backend_lab1.DTO.JwtAuthenticationResponse;
 import com.djeno.backend_lab1.DTO.SignInRequest;
 import com.djeno.backend_lab1.DTO.SignUpRequest;
+import com.djeno.backend_lab1.exceptions.InvalidSignRequestException;
 import com.djeno.backend_lab1.models.User;
 import com.djeno.backend_lab1.models.enums.Role;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,13 @@ public class AuthenticationService {
      */
     public JwtAuthenticationResponse signUp(SignUpRequest request) {
 
+        if (request.getUsername() == null || request.getUsername().isEmpty()) {
+            throw new InvalidSignRequestException("Username cannot be null or empty");
+        }
+        if (request.getPassword() == null || request.getPassword().isEmpty()) {
+            throw new InvalidSignRequestException("Password cannot be null or empty");
+        }
+
         var user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -46,6 +54,14 @@ public class AuthenticationService {
      * @return токен
      */
     public JwtAuthenticationResponse signIn(SignInRequest request) {
+
+        if (request.getUsername() == null || request.getUsername().isEmpty()) {
+            throw new InvalidSignRequestException("Username cannot be null or empty");
+        }
+        if (request.getPassword() == null || request.getPassword().isEmpty()) {
+            throw new InvalidSignRequestException("Password cannot be null or empty");
+        }
+
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
                 request.getPassword()
