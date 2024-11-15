@@ -40,12 +40,8 @@ export default function SignInPage() {
             body: JSON.stringify(user)
         })
             .then(async (res) => {
-                console.log(res); // Просмотр объекта ответа
-                const responseBody = await res.json(); // Получаем тело ответа
-                console.log(responseBody);
-
+                const responseBody = await res.json();
                 if (!res.ok) {
-                    // Если ответ не успешный, выбрасываем ошибку с сообщением
                     throw new Error(responseBody.message || 'Ошибка авторизации');
                 }
 
@@ -57,8 +53,7 @@ export default function SignInPage() {
                 }
 
                 sessionStorage.setItem('jwt', jwtToken); // Сохраняем токен в sessionStorage
-                console.log('auth success');
-                console.log(jwtToken);
+
                 toMainPage(); // Переход на главную страницу
             })
             .catch(err => setError(err.message)); // Отображаем сообщение об ошибке

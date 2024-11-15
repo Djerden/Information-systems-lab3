@@ -5,40 +5,49 @@ import ErrorPage from "./pages/ErrorPage.jsx";
 import AdminPanel from "./pages/nav_menu/AdminPanel.jsx";
 import SignInPage from "./pages/auth/SignInPage.jsx";
 import SignUpPage from "./pages/auth/SignUpPage.jsx";
+import ProtectedRoute from "./components/security/ProtectedRoute.jsx";
 
 function App() {
 
     const router = createBrowserRouter([
         {
             path: '/', RouterProvider,
-            element: <Root />,
+            element: <Root/>,
             errorElement: <ErrorPage/>,
             children: [
                 {
                     path: '/groups',
-                    element: <Groups />,
+                    element: (
+                        <ProtectedRoute>
+                            <Groups/>
+                        </ProtectedRoute>
+                    )
                 },
                 {
-                  path: '/admin',
-                  element: <AdminPanel/>
+                    path: '/admin',
+                    element: (
+                        <ProtectedRoute allowedRole={"ROLE_ADMIN"}>
+                            <AdminPanel/>
+                        </ProtectedRoute>
+                    )
                 },
                 {
                     path: '/sign-in',
-                    element: <SignInPage />
+                    element: <SignInPage/>
                 },
                 {
                     path: '/sign-up',
-                    element: <SignUpPage />
+                    element: <SignUpPage/>
                 },
             ]
         },
     ])
 
-  return (
-    <>
-        <RouterProvider router={router}/>
-    </>
-  )
+    return (
+        <>
+            <RouterProvider router={router}/>
+        </>
+    )
 }
 
 export default App
