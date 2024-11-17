@@ -41,3 +41,11 @@ CREATE TABLE users (
                         password VARCHAR(255) NOT NULL,
                         role VARCHAR(50) NOT NULL
 );
+
+CREATE TABLE admin_requests (
+                                id SERIAL PRIMARY KEY,
+                                user_id BIGINT NOT NULL,
+                                status VARCHAR(20) DEFAULT 'PENDING', -- Возможные статусы: PENDING, APPROVED, REJECTED
+                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                FOREIGN KEY (user_id) REFERENCES users(id)
+);

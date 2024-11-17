@@ -72,6 +72,15 @@ public class UserService {
         return getByUsername(username);
     }
 
+    /**
+     * Проверка, существует ли пользователь с указанной ролью
+     *
+     * @param role роль для проверки
+     * @return true, если пользователь с ролью существует, иначе false
+     */
+    public boolean existsByRole(Role role) {
+        return repository.existsByRole(role);
+    }
 
     /**
      * Выдача прав администратора текущему пользователю

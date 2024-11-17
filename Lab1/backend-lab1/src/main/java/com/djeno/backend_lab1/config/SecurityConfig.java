@@ -1,5 +1,6 @@
 package com.djeno.backend_lab1.config;
 
+import com.djeno.backend_lab1.models.User;
 import com.djeno.backend_lab1.security.JwtAuthenticationFilter;
 import com.djeno.backend_lab1.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +16,11 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -43,7 +46,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new CorsConfiguration();
                     corsConfiguration.setAllowedOriginPatterns(List.of("*"));
-                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     corsConfiguration.setAllowedHeaders(List.of("*"));
                     corsConfiguration.setAllowCredentials(true);
                     return corsConfiguration;
@@ -53,7 +56,19 @@ public class SecurityConfig {
                         // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
+
+                        // Эндпоинт подачи заявки (требуется только аутентификация)
+                        .requestMatchers(HttpMethod.POST, "/admin/apply").authenticated()
+
                         .requestMatchers("/endpoint", "/admin/**").hasRole("ADMIN")
+
+
+
+                        // Эндпоинты для администраторов
+                        .requestMatchers(HttpMethod.GET, "/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/admin/{requestId}/approve").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/admin/{requestId}/reject").hasRole("ADMIN")
+
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider())
@@ -74,9 +89,33 @@ public class SecurityConfig {
         return authProvider;
     }
 
+    // не работает, используется только DaoAuthenticationProvider
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
+    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
+        var admin = org.springframework.security.core.userdetails.User.builder()
+                .username("admin")
+                .password(passwordEncoder().encode("admin123"))
+                .roles("ADMIN")
+                .build();
+
+        return new InMemoryUserDetailsManager(admin);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
+//    @Bean
+//    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+//        AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
+//
+//        // Добавляем оба механизма аутентификации
+//        auth.authenticationProvider(authenticationProvider()); // для базы данных
+//        auth.userDetailsService(inMemoryUserDetailsManager()); // для in-memory
+//
+//        return auth.build();
+//    }
+
+
 }
