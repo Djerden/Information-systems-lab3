@@ -1,4 +1,4 @@
-import {createBrowserRouter, RouterProvider} from "react-router-dom"
+import {createBrowserRouter, Navigate, RouterProvider} from "react-router-dom"
 import Groups from "./pages/nav_menu/Groups.jsx";
 import Root from "./components/Root.jsx";
 import ErrorPage from "./pages/ErrorPage.jsx";
@@ -15,6 +15,10 @@ function App() {
             element: <Root/>,
             errorElement: <ErrorPage/>,
             children: [
+                {
+                    path: '/',
+                    element: <Navigate to="/groups" replace />
+                },
                 {
                     path: '/groups',
                     element: (
