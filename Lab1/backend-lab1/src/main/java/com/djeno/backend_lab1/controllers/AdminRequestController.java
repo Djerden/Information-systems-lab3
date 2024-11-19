@@ -17,7 +17,6 @@ public class AdminRequestController {
 
     @PostMapping("/apply")
     public ResponseEntity<?> applyForAdminRole() {
-        System.out.println("Обращение в точку apply (заявка на админа)");
         adminRequestService.createAdminRequest();
         return ResponseEntity.ok("Your request has been submitted");
     }

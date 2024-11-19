@@ -1,5 +1,6 @@
 package com.djeno.backend_lab1.models;
 
+import com.djeno.backend_lab1.models.enums.AdminRequestStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,8 +24,9 @@ public class AdminRequest {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status; // PENDING, APPROVED, REJECTED
+    private AdminRequestStatus status; // PENDING, APPROVED, REJECTED
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

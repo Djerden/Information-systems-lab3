@@ -8,11 +8,6 @@ import java.util.List;
 
 @Repository
 public interface CoordinatesRepository extends JpaRepository<Coordinates, Long> {
-
-    //Например, найти все координаты с определенным значением x
-    List<Coordinates> findByX(float x);
-
-    // Найти все координаты с y больше заданного значения
-    List<Coordinates> findByYGreaterThan(double y);
+    boolean existsByIdAndUserId(Long id, Long userId);
 }
 

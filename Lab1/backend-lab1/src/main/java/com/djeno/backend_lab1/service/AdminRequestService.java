@@ -1,6 +1,7 @@
 package com.djeno.backend_lab1.service;
 
 import com.djeno.backend_lab1.models.AdminRequest;
+import com.djeno.backend_lab1.models.enums.AdminRequestStatus;
 import com.djeno.backend_lab1.models.enums.Role;
 import com.djeno.backend_lab1.repositories.AdminRequestRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,11 @@ import java.util.List;
 public class AdminRequestService {
     private final UserService userService;
     private final AdminRequestRepository adminRequestRepository;
+
+    // Получение всех заявок
+    public List<AdminRequest> getAllRequests() {
+        return adminRequestRepository.findAll();
+    }
 
     // Создание заявки
     public void createAdminRequest() {
@@ -29,15 +35,10 @@ public class AdminRequestService {
             // Если администратор есть, создаем заявку со статусом PENDING
             AdminRequest request = AdminRequest.builder()
                     .user(currentUser)
-                    .status("PENDING")
+                    .status(AdminRequestStatus.PENDING)
                     .build();
             adminRequestRepository.save(request);
         }
-    }
-
-    // Получение всех заявок
-    public List<AdminRequest> getAllRequests() {
-        return adminRequestRepository.findAll();
     }
 
     // Одобрение заявки
@@ -45,7 +46,7 @@ public class AdminRequestService {
         AdminRequest request = adminRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
-        request.setStatus("APPROVED");
+        request.setStatus(AdminRequestStatus.APPROVED);
         adminRequestRepository.save(request);
 
         // Назначаем пользователю роль ADMIN
@@ -59,7 +60,7 @@ public class AdminRequestService {
         AdminRequest request = adminRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
-        request.setStatus("REJECTED");
+        request.setStatus(AdminRequestStatus.REJECTED);
         adminRequestRepository.save(request);
     }
 }

@@ -81,16 +81,4 @@ public class UserService {
     public boolean existsByRole(Role role) {
         return repository.existsByRole(role);
     }
-
-    /**
-     * Выдача прав администратора текущему пользователю
-     * <p>
-     * Нужен для демонстрации
-     */
-    @Deprecated
-    public void getAdmin() {
-        var user = getCurrentUser();
-        user.setRole(Role.ROLE_ADMIN);
-        save(user);
-    }
 }

@@ -12,22 +12,8 @@ import java.util.List;
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Long> {
 
-    // Найти всех людей с заданным именем
-    List<Person> findByName(String name);
+    // Проверить принадлежность объекта пользователю
+    boolean existsByIdAndUserId(Long id, Long userId);
 
-    // Найти всех людей с определенным цветом глаз
-    List<Person> findByEyeColor(Color eyeColor);
-
-    // Найти всех людей с определенным цветом волос
-    List<Person> findByHairColor(Color hairColor);
-
-    // Найти всех людей по локации
-    List<Person> findByLocation(Location location);
-
-    // Найти всех людей с весом больше заданного значения
-    List<Person> findByWeightGreaterThan(float weight);
-
-    // Найти всех людей по национальности
-    List<Person> findByNationality(Country nationality);
 }
 

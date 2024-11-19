@@ -62,7 +62,9 @@ public class StudyGroup {
     @JoinColumn(name = "group_admin_id")
     private Person groupAdmin; //Поле может быть null
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private User user;
+    // Владелец, создавший запись
+    @NotNull(message = "User cannot be null")
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

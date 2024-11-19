@@ -8,16 +8,5 @@ import java.util.List;
 
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Long> {
-
-    // Найти все записи с определенным значением x
-    List<Location> findByX(Float x);
-
-    // Найти все записи с определенным значением y
-    List<Location> findByY(Integer y);
-
-    // Найти все записи, у которых поле name совпадает с заданным значением
-    List<Location> findByName(String name);
-
-    // Найти все записи, у которых поле name содержит заданную подстроку
-    List<Location> findByNameContaining(String substring);
+    boolean existsByIdAndUserId(Long id, Long userId);
 }

@@ -6,45 +6,31 @@ import com.djeno.backend_lab1.models.Person;
 import com.djeno.backend_lab1.models.StudyGroup;
 import com.djeno.backend_lab1.models.enums.FormOfEducation;
 import com.djeno.backend_lab1.models.enums.Semester;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
 
-    // Найти группы по имени
-    List<StudyGroup> findByName(String name);
+    // Проверка, принадлежит ли объект указанному пользователю
+    boolean existsByIdAndUserId(Long id, Long userId);
 
-    // Найти группы по координатам
-    List<StudyGroup> findByCoordinates(Coordinates coordinates);
+    // Найти группы с подстрокой в имени
+    List<StudyGroup> findByNameContaining(String name, Pageable pageable);
 
-    // Найти группы по дате создания
-    List<StudyGroup> findByCreationDate(LocalDate creationDate);
+    // Найти группу с минимальным значением expelledStudents
+    @Query("SELECT sg FROM StudyGroup sg WHERE sg.expelledStudents = (SELECT MIN(sg2.expelledStudents) FROM StudyGroup sg2)")
+    Optional<StudyGroup> findWithMinExpelledStudents();
 
-    // Найти группы, где количество студентов больше указанного значения
-    List<StudyGroup> findByStudentsCountGreaterThan(long count);
+    // Подсчитать количество групп, у которых id groupAdmin больше указанного
+    @Query("SELECT COUNT(sg) FROM StudyGroup sg WHERE sg.groupAdmin.id > :adminId")
+    long countByGroupAdminGreaterThan(@Param("adminId") Long adminId);
 
-    // Найти группы, где количество отчисленных студентов больше указанного значения
-    List<StudyGroup> findByExpelledStudentsGreaterThan(int count);
-
-    // Найти группы с определенной формой обучения
-    List<StudyGroup> findByFormOfEducation(FormOfEducation formOfEducation);
-
-    // Найти группы по семестру
-    List<StudyGroup> findBySemesterEnum(Semester semesterEnum);
-
-    // Найти группы по администратору группы
-    List<StudyGroup> findByGroupAdmin(Person groupAdmin);
-
-    // Найти группы, где количество студентов, подлежащих отчислению, больше указанного значения
-    List<StudyGroup> findByShouldBeExpelledGreaterThan(long count);
-
-    // Найти группы с указанным числом переведенных студентов или более
-    List<StudyGroup> findByTransferredStudentsGreaterThanEqual(Long count);
-
-    // Найти группы с количеством студентов меньше или равным заданному значению
-    List<StudyGroup> findByStudentsCountLessThanEqual(long count);
 }

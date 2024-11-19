@@ -25,4 +25,10 @@ public class Location {
 
     @Column(name = "name")
     private String name; //Поле может быть null
+
+    // Владелец, создавший запись
+    @NotNull(message = "User cannot be null")
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

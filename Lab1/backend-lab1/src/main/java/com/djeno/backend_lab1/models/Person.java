@@ -47,4 +47,10 @@ public class Person {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Country nationality; //Поле не может быть null
+
+    // Владелец, создавший запись
+    @NotNull(message = "User cannot be null")
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }
