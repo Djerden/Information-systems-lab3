@@ -9,20 +9,50 @@ export default function GroupModal({
                                        isOpen,
                                        onRequestClose,
                                        group,
+                                       editGroup
                                    }) {
-    const [groupData, setGroupData] = useState(
-        group || {
-            name: "",
-            studentsCount: "",
-            expelledStudents: "",
-            transferredStudents: "",
-            formOfEducation: "",
-            shouldBeExpelled: "",
-            semesterEnum: "",
-            coordinatesId: "",
-            groupAdminId: "",
+    const [groupData, setGroupData] = useState({
+        name: "",
+        studentsCount: "",
+        expelledStudents: "",
+        transferredStudents: "",
+        formOfEducation: "",
+        shouldBeExpelled: "",
+        semesterEnum: "",
+        coordinatesId: "",
+        groupAdminId: "",
+    });
+
+    // Подгружаем данные при изменении `group`
+    useEffect(() => {
+        if (group) {
+            setGroupData({
+                id: group.id,
+                name: group.name || "",
+                studentsCount: group.studentsCount || "",
+                expelledStudents: group.expelledStudents || "",
+                transferredStudents: group.transferredStudents || "",
+                formOfEducation: group.formOfEducation || "",
+                shouldBeExpelled: group.shouldBeExpelled || "",
+                semesterEnum: group.semesterEnum || "",
+                coordinatesId: group.coordinates?.id || "",
+                groupAdminId: group.groupAdmin?.id || "",
+            });
+        } else {
+            // Если редактируемой группы нет, сбрасываем данные
+            setGroupData({
+                name: "",
+                studentsCount: "",
+                expelledStudents: "",
+                transferredStudents: "",
+                formOfEducation: "",
+                shouldBeExpelled: "",
+                semesterEnum: "",
+                coordinatesId: "",
+                groupAdminId: "",
+            });
         }
-    );
+    }, [group]); // Выполняется при изменении `group`
 
     const [coordinates, setCoordinates] = useState([]);
     const [persons, setPersons] = useState([]);
@@ -78,6 +108,8 @@ export default function GroupModal({
         setError("");
     }
 
+    console.log(editGroup)
+
     const handleSave = async () => {
         // Валидация обязательных полей
         if (!groupData.name.trim()) {
@@ -111,11 +143,11 @@ export default function GroupModal({
         // Если валидация прошла успешно
         setError(""); // Сбрасываем ошибку
 
-        const url = group
+        const url = editGroup
             ? `http://localhost:8080/study-groups/${group.id}`
             : "http://localhost:8080/study-groups";
 
-        const method = group ? "PUT" : "POST";
+        const method = editGroup ? "PUT" : "POST";
 
         console.log(groupData);
 
@@ -177,40 +209,72 @@ export default function GroupModal({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Coordinates
                 </label>
-                <select
-                    value={groupData.coordinatesId}
-                    onChange={(e) =>
-                        setGroupData({...groupData, coordinatesId: e.target.value})
-                    }
-                    className="w-full px-3 py-2 border rounded"
-                >
-                    <option value="">Select Coordinates</option>
-                    {coordinates.map((coord) => (
-                        <option key={coord.id} value={coord.id}>
-                            X: {coord.x}, Y: {coord.y}
-                        </option>
-                    ))}
-                </select>
+                <div className="flex items-center space-x-2">
+                    <select
+                        value={groupData.coordinatesId}
+                        onChange={(e) =>
+                            setGroupData({...groupData, coordinatesId: e.target.value})
+                        }
+                        className="w-full px-3 py-2 border rounded"
+                    >
+                        <option value="">Select Coordinates</option>
+                        {coordinates.map((coord) => (
+                            <option key={coord.id} value={coord.id}>
+                                X: {coord.x}, Y: {coord.y}
+                            </option>
+                        ))}
+                    </select>
+                    <button
+                        onClick={() => setIsCoordinatesModalOpen(true)}
+                        className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                    >
+                        +
+                    </button>
+                </div>
             </div>
+
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Admin (optional)
                 </label>
-                <select
-                    value={groupData.groupAdminId}
-                    onChange={(e) =>
-                        setGroupData({...groupData, groupAdminId: e.target.value})
-                    }
-                    className="w-full px-3 py-2 border rounded"
-                >
-                    <option value="">Select Admin</option>
-                    {persons.map((person) => (
-                        <option key={person.id} value={person.id}>
-                            {person.name}
-                        </option>
-                    ))}
-                </select>
+                <div className="flex items-center space-x-2">
+                    <select
+                        value={groupData.groupAdminId}
+                        onChange={(e) =>
+                            setGroupData({...groupData, groupAdminId: e.target.value})
+                        }
+                        className="w-full px-3 py-2 border rounded"
+                    >
+                        <option value="">Select Admin</option>
+                        {persons.map((person) => (
+                            <option key={person.id} value={person.id}>
+                                {person.name}
+                            </option>
+                        ))}
+                    </select>
+                    <button
+                        onClick={() => setIsPersonModalOpen(true)}
+                        className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                    >
+                        +
+                    </button>
+                </div>
             </div>
+
+            {/* Модальное окно для создания Coordinates */}
+            <CoordinatesModal
+                isOpen={isCoordinatesModalOpen}
+                onRequestClose={() => setIsCoordinatesModalOpen(false)}
+                onCoordinatesCreated={fetchCoordinates}
+            />
+
+            {/* Модальное окно для создания Person */}
+            <PersonModal
+                isOpen={isPersonModalOpen}
+                onRequestClose={() => setIsPersonModalOpen(false)}
+                onPersonCreated={fetchPersons}
+            />
+
 
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">

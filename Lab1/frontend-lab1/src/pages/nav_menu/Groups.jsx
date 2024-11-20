@@ -19,6 +19,8 @@ export default function Groups() {
     const [totalPages, setTotalPages] = useState(0);
     const [currentPage, setCurrentPage] = useState(0);
 
+    const [editGroup, setEditGroup] = useState(false);
+
     // Загружаем группы с сервера
     const fetchGroups = async (page = 0) => {
         try {
@@ -42,6 +44,7 @@ export default function Groups() {
 
     // Обработчик открытия модального окна для редактирования
     const handleEditGroup = (group) => {
+        setEditGroup(true);
         setEditingGroup(group);
         setIsGroupModalOpen(true);
     };
@@ -69,6 +72,9 @@ export default function Groups() {
             fetchGroups(currentPage - 1);
         }
     };
+
+    const handleDeleteGroup = () => {}
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
@@ -151,12 +157,20 @@ export default function Groups() {
                             <td className="border px-4 py-2">{group.groupAdmin?.weight || "N/A"}</td>
                             <td className="border px-4 py-2">{group.groupAdmin?.nationality || "N/A"}</td>
                             <td className="border px-4 py-2">
-                                <button
-                                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
-                                    onClick={() => handleEditGroup(group)}
-                                >
-                                    Edit
-                                </button>
+                                <div className="flex space-x-2">
+                                    <button
+                                        className="w-24 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-center"
+                                        onClick={() => handleEditGroup(group)}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="w-24 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-center"
+                                        onClick={() => handleDeleteGroup(group.id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -192,9 +206,11 @@ export default function Groups() {
             {/* Модальные окна */}
             <GroupModal
                 isOpen={isGroupModalOpen}
-                onRequestClose={() => setIsGroupModalOpen(false)}
+                onRequestClose={() => {setIsGroupModalOpen(false);
+                                      setEditGroup(false);}}
                 group={editingGroup}
                 onSave={fetchGroups} // Перезагрузка групп после сохранения
+                editGroup={editGroup}
             />
             <PersonModal
                 isOpen={isPersonModalOpen}

@@ -4,7 +4,7 @@ import LocationModal from "./LocationModal";
 
 Modal.setAppElement("#root");
 
-export default function PersonModal({ isOpen, onRequestClose}) {
+export default function PersonModal({ isOpen, onRequestClose, onPersonCreated}) {
     const [personData, setPersonData] = useState({
         name: "",
         eyeColor: "",
@@ -98,6 +98,11 @@ export default function PersonModal({ isOpen, onRequestClose}) {
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || "Failed to save person.");
+            }
+
+            // Вызываем колбэк после успешного сохранения
+            if (onPersonCreated) {
+                onPersonCreated();
             }
 
             resetForm(); // Сбрасываем форму после успешного сохранения
@@ -210,7 +215,7 @@ export default function PersonModal({ isOpen, onRequestClose}) {
                             onClick={() => setIsLocationModalOpen(true)}
                             className="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
                         >
-                            New Location
+                            +
                         </button>
                     </div>
                 </div>

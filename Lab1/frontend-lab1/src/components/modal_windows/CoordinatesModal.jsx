@@ -3,7 +3,7 @@ import Modal from "react-modal";
 
 Modal.setAppElement("#root");
 
-export default function CoordinatesModal({ isOpen, onRequestClose}) {
+export default function CoordinatesModal({ isOpen, onRequestClose, onCoordinatesCreated}) {
     const [coordinatesData, setCoordinatesData] = useState({
         x: "",
         y: "",
@@ -56,6 +56,11 @@ export default function CoordinatesModal({ isOpen, onRequestClose}) {
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || "Failed to save coordinates.");
+            }
+
+            // Вызываем колбэк после успешного сохранения
+            if (onCoordinatesCreated) {
+                onCoordinatesCreated();
             }
 
             resetForm(); // Сбрасываем форму при успешном сохранении
