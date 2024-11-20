@@ -85,7 +85,7 @@ export default function AdminPanel() {
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Панель администратора</h1>
+            <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
 
             {loading && <p>Загрузка заявок...</p>}
             {error && <p className="text-red-500">Ошибка: {error}</p>}
@@ -96,10 +96,10 @@ export default function AdminPanel() {
                         <thead>
                         <tr>
                             <th className="border border-gray-300 px-4 py-2">ID</th>
-                            <th className="border border-gray-300 px-4 py-2">Имя пользователя</th>
-                            <th className="border border-gray-300 px-4 py-2">Статус</th>
-                            <th className="border border-gray-300 px-4 py-2">Дата создания</th>
-                            <th className="border border-gray-300 px-4 py-2">Действия</th>
+                            <th className="border border-gray-300 px-4 py-2">User name</th>
+                            <th className="border border-gray-300 px-4 py-2">Status</th>
+                            <th className="border border-gray-300 px-4 py-2">Creation Date</th>
+                            <th className="border border-gray-300 px-4 py-2">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -118,17 +118,17 @@ export default function AdminPanel() {
                                                 onClick={() => approveRequest(request.id)}
                                                 className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition duration-200"
                                             >
-                                                Одобрить
+                                                Approve
                                             </button>
                                             <button
                                                 onClick={() => rejectRequest(request.id)}
                                                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition duration-200"
                                             >
-                                                Отклонить
+                                                Reject
                                             </button>
                                         </div>
                                     ) : (
-                                        <span>Нет действий</span>
+                                        <span>There are no actions</span>
                                     )}
                                 </td>
                             </tr>
