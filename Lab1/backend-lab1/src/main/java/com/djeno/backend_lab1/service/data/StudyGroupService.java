@@ -30,7 +30,7 @@ public class StudyGroupService {
 
     private final StudyGroupRepository studyGroupRepository;
     private final CoordinatesRepository coordinatesRepository;
-    private final PersonRepository personRepository;
+    private final PersonService personService;
     private final UserService userService;
 
     public StudyGroup createStudyGroup(StudyGroupDTO studyGroupDTO) {
@@ -43,8 +43,8 @@ public class StudyGroupService {
         // Извлечение Admin по id из DTO (если указан)
         Person admin = null;
         if (studyGroupDTO.getGroupAdminId() != null) {
-            admin = personRepository.findById(studyGroupDTO.getGroupAdminId())
-                    .orElseThrow(() -> new RuntimeException("Admin not found"));
+            System.out.println(studyGroupDTO.getGroupAdminId());
+            admin = personService.getPersonById(studyGroupDTO.getGroupAdminId());
         }
 
         // Преобразование DTO в Entity

@@ -61,7 +61,7 @@ public class PersonService {
     }
 
 
-    // Получение Person по ID с проверкой доступа
+
     public Person getPersonById(Long id) {
         Person person = personRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Person not found with id: " + id));

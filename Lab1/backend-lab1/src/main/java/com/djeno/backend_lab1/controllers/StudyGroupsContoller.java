@@ -32,18 +32,9 @@ public class StudyGroupsContoller {
     @GetMapping
     public ResponseEntity<Page<StudyGroup>> getAllStudyGroups(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id,asc") String[] sort) {
+            @RequestParam(defaultValue = "10") int size) {
 
-        // Обработка параметров сортировки
-        List<Sort.Order> orders = Arrays.stream(sort)
-                .map(s -> {
-                    String[] parts = s.split(",");
-                    return new Sort.Order(Sort.Direction.fromString(parts[1]), parts[0]);
-                })
-                .toList();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(orders));
+        Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(studyGroupService.getAllStudyGroups(pageable));
     }
 
