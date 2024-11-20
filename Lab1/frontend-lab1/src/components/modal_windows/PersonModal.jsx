@@ -20,8 +20,6 @@ export default function PersonModal({ isOpen, onRequestClose}) {
 
     const token = sessionStorage.getItem("jwt");
 
-    console.log(personData)
-
     // Получение списка локаций
     async function fetchLocations() {
         try {

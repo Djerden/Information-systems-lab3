@@ -117,6 +117,8 @@ export default function GroupModal({
 
         const method = group ? "PUT" : "POST";
 
+        console.log(groupData);
+
         try {
             const response = await fetch(url, {
                 method,
