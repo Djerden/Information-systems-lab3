@@ -27,22 +27,10 @@ public class LocationController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Location>> getAllLocations(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id,asc") String[] sort) {
-
-        // Обработка параметров сортировки
-        List<Sort.Order> orders = Arrays.stream(sort)
-                .map(s -> {
-                    String[] parts = s.split(",");
-                    return new Sort.Order(Sort.Direction.fromString(parts[1]), parts[0]);
-                })
-                .toList();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(orders));
-        return ResponseEntity.ok(locationService.getAllLocations(pageable));
+    public ResponseEntity<List<Location>> getAllLocations() {
+        return ResponseEntity.ok(locationService.getAllLocations());
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Location> getLocationById(@PathVariable Long id) {

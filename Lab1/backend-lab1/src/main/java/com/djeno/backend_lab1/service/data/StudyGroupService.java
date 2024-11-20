@@ -1,10 +1,13 @@
 package com.djeno.backend_lab1.service.data;
 
+import com.djeno.backend_lab1.DTO.StudyGroupDTO;
 import com.djeno.backend_lab1.models.Coordinates;
 import com.djeno.backend_lab1.models.Person;
 import com.djeno.backend_lab1.models.StudyGroup;
 import com.djeno.backend_lab1.models.User;
+import com.djeno.backend_lab1.models.enums.FormOfEducation;
 import com.djeno.backend_lab1.models.enums.Role;
+import com.djeno.backend_lab1.models.enums.Semester;
 import com.djeno.backend_lab1.repositories.CoordinatesRepository;
 import com.djeno.backend_lab1.repositories.PersonRepository;
 import com.djeno.backend_lab1.repositories.StudyGroupRepository;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,25 +33,43 @@ public class StudyGroupService {
     private final PersonRepository personRepository;
     private final UserService userService;
 
-    // Создание группы
-    public StudyGroup createStudyGroup(StudyGroup studyGroup, Long coordinatesId, Long adminId) {
+    public StudyGroup createStudyGroup(StudyGroupDTO studyGroupDTO) {
         var currentUser = userService.getCurrentUser();
-        studyGroup.setUser(currentUser);
 
-        // Логика привязки связанных объектов
-        if (coordinatesId != null) {
-            Coordinates coordinates = coordinatesRepository.findById(coordinatesId)
-                    .orElseThrow(() -> new RuntimeException("Coordinates not found"));
-            studyGroup.setCoordinates(coordinates);
+        // Извлечение Coordinates по id из DTO
+        Coordinates coordinates = coordinatesRepository.findById(studyGroupDTO.getCoordinatesId())
+                .orElseThrow(() -> new RuntimeException("Coordinates not found"));
+
+        // Извлечение Admin по id из DTO (если указан)
+        Person admin = null;
+        if (studyGroupDTO.getGroupAdminId() != null) {
+            admin = personRepository.findById(studyGroupDTO.getGroupAdminId())
+                    .orElseThrow(() -> new RuntimeException("Admin not found"));
         }
 
-        if (adminId != null) {
-            Person admin = personRepository.findById(adminId)
-                    .orElseThrow(() -> new RuntimeException("Person not found"));
-            studyGroup.setGroupAdmin(admin);
-        }
+        // Преобразование DTO в Entity
+        StudyGroup studyGroup = fromDTO(studyGroupDTO, coordinates, admin, currentUser);
 
+        // Сохранение StudyGroup
         return studyGroupRepository.save(studyGroup);
+    }
+
+    public static StudyGroup fromDTO(StudyGroupDTO dto, Coordinates coordinates, Person admin, User user) {
+        StudyGroup studyGroup = new StudyGroup();
+        studyGroup.setName(dto.getName());
+        studyGroup.setCoordinates(coordinates); // Устанавливаем объект Coordinates
+        studyGroup.setCreationDate(LocalDate.now()); // Автоматическая установка даты
+        studyGroup.setStudentsCount(dto.getStudentsCount());
+        studyGroup.setExpelledStudents(dto.getExpelledStudents());
+        studyGroup.setTransferredStudents(dto.getTransferredStudents());
+        studyGroup.setFormOfEducation(dto.getFormOfEducation() != null
+                ? FormOfEducation.valueOf(dto.getFormOfEducation()) : null);
+        studyGroup.setShouldBeExpelled(dto.getShouldBeExpelled());
+        studyGroup.setSemesterEnum(dto.getSemesterEnum() != null
+                ? Semester.valueOf(dto.getSemesterEnum()) : null);
+        studyGroup.setGroupAdmin(admin); // Устанавливаем объект Admin (если есть)
+        studyGroup.setUser(user); // Устанавливаем текущего пользователя
+        return studyGroup;
     }
 
     // Получение группы по ID с проверкой доступа

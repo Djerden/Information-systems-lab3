@@ -59,15 +59,17 @@ public class SecurityConfig {
 
                         // Эндпоинт подачи заявки (требуется только аутентификация)
                         .requestMatchers(HttpMethod.POST, "/admin/apply").authenticated()
-
-                        .requestMatchers("/endpoint", "/admin/**").hasRole("ADMIN")
-
-
-
                         // Эндпоинты для администраторов
                         .requestMatchers(HttpMethod.GET, "/admin").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/admin/{requestId}/approve").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/admin/{requestId}/reject").hasRole("ADMIN")
+
+                        // Эндпоинты для работы с данными
+                        .requestMatchers(HttpMethod.GET, "/study-groups/**","/persons/**", "/locations/**", "/coordinates/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/study-groups/**", "/persons/**", "/locations/**", "/coordinates/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/study-groups/**","/persons/**", "/locations/**", "/coordinates/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/study-groups/**","/persons/**", "/locations/**", "/coordinates/**").authenticated()
+
 
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))

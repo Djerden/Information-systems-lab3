@@ -1,8 +1,12 @@
 package com.djeno.backend_lab1.service.data;
 
+import com.djeno.backend_lab1.DTO.PersonDTO;
+import com.djeno.backend_lab1.models.Location;
 import com.djeno.backend_lab1.models.Person;
 import com.djeno.backend_lab1.models.enums.Color;
+import com.djeno.backend_lab1.models.enums.Country;
 import com.djeno.backend_lab1.models.enums.Role;
+import com.djeno.backend_lab1.repositories.LocationRepository;
 import com.djeno.backend_lab1.repositories.PersonRepository;
 import com.djeno.backend_lab1.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +23,43 @@ import java.util.Optional;
 public class PersonService {
 
     private final PersonRepository personRepository;
+    private final LocationRepository locationRepository;
     private final UserService userService;
 
     // Создание Person
     public Person createPerson(Person person) {
         var currentUser = userService.getCurrentUser();
         person.setUser(currentUser); // Устанавливаем владельца
+
+        // Получаем объект Location по id
+        if (person.getLocation() != null && person.getLocation().getId() != null) {
+            Location location = locationRepository.findById(person.getLocation().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid location ID: " + person.getLocation().getId()));
+            person.setLocation(location); // Устанавливаем Location
+        } else {
+            person.setLocation(null); // Если locationId не передан
+        }
+
         return personRepository.save(person);
     }
+
+    public Person fromDTO(PersonDTO dto) {
+        Person person = new Person();
+        person.setName(dto.getName());
+        person.setEyeColor(Color.valueOf(dto.getEyeColor()));
+        person.setHairColor(Color.valueOf(dto.getHairColor()));
+        person.setWeight(dto.getWeight());
+        person.setNationality(Country.valueOf(dto.getNationality()));
+
+        if (dto.getLocationId() != null) {
+            Location location = locationRepository.findById(dto.getLocationId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid location ID: " + dto.getLocationId()));
+            person.setLocation(location);
+        }
+
+        return person;
+    }
+
 
     // Получение Person по ID с проверкой доступа
     public Person getPersonById(Long id) {
@@ -35,8 +68,8 @@ public class PersonService {
         return person;
     }
 
-    public Page<Person> getAllPersons(Pageable pageable) {
-        return personRepository.findAll(pageable);
+    public List<Person> getAllPersons() {
+        return personRepository.findAll();
     }
 
     // Обновление Person

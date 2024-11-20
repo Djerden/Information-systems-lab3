@@ -1,5 +1,6 @@
 package com.djeno.backend_lab1.controllers;
 
+import com.djeno.backend_lab1.DTO.StudyGroupDTO;
 import com.djeno.backend_lab1.models.StudyGroup;
 import com.djeno.backend_lab1.service.data.StudyGroupService;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +24,9 @@ public class StudyGroupsContoller {
 
     @PostMapping
     public ResponseEntity<StudyGroup> createStudyGroup(
-            @RequestBody StudyGroup studyGroup,
-            @RequestParam(required = false) Long coordinatesId,
-            @RequestParam(required = false) Long adminId) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(studyGroupService.createStudyGroup(studyGroup, coordinatesId, adminId));
+            @RequestBody StudyGroupDTO studyGroupDTO) {
+        StudyGroup createdGroup = studyGroupService.createStudyGroup(studyGroupDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdGroup);
     }
 
     @GetMapping

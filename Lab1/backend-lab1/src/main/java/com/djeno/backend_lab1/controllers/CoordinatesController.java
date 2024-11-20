@@ -27,21 +27,8 @@ public class CoordinatesController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Coordinates>> getAllCoordinates(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id,asc") String[] sort) {
-
-        // Обработка параметров сортировки
-        List<Sort.Order> orders = Arrays.stream(sort)
-                .map(s -> {
-                    String[] parts = s.split(",");
-                    return new Sort.Order(Sort.Direction.fromString(parts[1]), parts[0]);
-                })
-                .toList();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(orders));
-        return ResponseEntity.ok(coordinatesService.getAllCoordinates(pageable));
+    public ResponseEntity<List<Coordinates>> getAllCoordinates() {
+        return ResponseEntity.ok(coordinatesService.getAllCoordinates());
     }
 
     @GetMapping("/{id}")

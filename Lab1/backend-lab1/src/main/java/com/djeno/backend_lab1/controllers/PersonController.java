@@ -1,5 +1,6 @@
 package com.djeno.backend_lab1.controllers;
 
+import com.djeno.backend_lab1.DTO.PersonDTO;
 import com.djeno.backend_lab1.models.Person;
 import com.djeno.backend_lab1.service.data.PersonService;
 import lombok.RequiredArgsConstructor;
@@ -22,26 +23,14 @@ public class PersonController {
     private final PersonService personService;
 
     @PostMapping
-    public ResponseEntity<Person> createPerson(@RequestBody Person person) {
+    public ResponseEntity<Person> createPerson(@RequestBody PersonDTO dto) {
+        Person person = personService.fromDTO(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(personService.createPerson(person));
     }
 
     @GetMapping
-    public ResponseEntity<Page<Person>> getAllPersons(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id,asc") String[] sort) {
-
-        // Обработка параметров сортировки
-        List<Sort.Order> orders = Arrays.stream(sort)
-                .map(s -> {
-                    String[] parts = s.split(",");
-                    return new Sort.Order(Sort.Direction.fromString(parts[1]), parts[0]);
-                })
-                .toList();
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(orders));
-        return ResponseEntity.ok(personService.getAllPersons(pageable));
+    public ResponseEntity<List<Person>> getAllPersons() {
+        return ResponseEntity.ok(personService.getAllPersons());
     }
 
     @GetMapping("/{id}")

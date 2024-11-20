@@ -34,7 +34,6 @@ public class Person {
     @Column(name = "hair_color", nullable = false)
     private Color hairColor; //Поле не может быть null
 
-    @NotNull(message = "location cannot be null")
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)
     private Location location; //Поле может быть null

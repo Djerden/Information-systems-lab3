@@ -34,8 +34,8 @@ public class LocationService {
         return location;
     }
 
-    public Page<Location> getAllLocations(Pageable pageable) {
-        return locationRepository.findAll(pageable);
+    public List<Location> getAllLocations() {
+        return locationRepository.findAll();
     }
 
     // Обновление Location

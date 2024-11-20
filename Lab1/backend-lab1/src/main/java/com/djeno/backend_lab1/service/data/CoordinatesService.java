@@ -34,8 +34,8 @@ public class CoordinatesService {
         return coordinates;
     }
 
-    public Page<Coordinates> getAllCoordinates(Pageable pageable) {
-        return coordinatesRepository.findAll(pageable);
+    public List<Coordinates> getAllCoordinates() {
+        return coordinatesRepository.findAll();
     }
 
     // Обновление Coordinates
