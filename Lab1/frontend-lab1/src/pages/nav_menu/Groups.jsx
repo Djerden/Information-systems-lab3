@@ -34,6 +34,7 @@ export default function Groups() {
             }
             const data = await response.json();
             setGroups(data.content); // Устанавливаем полученные группы
+
             setTotalPages(data.totalPages); // Устанавливаем общее количество страниц
             setCurrentPage(data.number); // Устанавливаем текущую страницу
         } catch (error) {
@@ -41,6 +42,7 @@ export default function Groups() {
         }
     };
 
+    console.log(groups)
 
     // Обработчик открытия модального окна для редактирования
     const handleEditGroup = (group) => {
@@ -73,7 +75,30 @@ export default function Groups() {
         }
     };
 
-    const handleDeleteGroup = () => {}
+    const handleDeleteGroup = async (groupId) => {
+        if (!window.confirm("Are you sure you want to delete this group?")) {
+            return; // Пользователь отменил удаление
+        }
+
+        console.log(groupId);
+
+        try {
+            const response = await fetch(`http://localhost:8080/study-groups/${groupId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to delete group: ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error("Failed to delete group:", error);
+            alert("Failed to delete group. Please try again.");
+        }
+    };
 
     return (
         <div className="p-6">

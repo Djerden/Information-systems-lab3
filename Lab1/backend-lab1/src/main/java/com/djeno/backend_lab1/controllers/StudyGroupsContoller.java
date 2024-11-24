@@ -43,13 +43,15 @@ public class StudyGroupsContoller {
         return ResponseEntity.ok(studyGroupService.getStudyGroupById(id));
     }
 
+    // изменение группы по id
     @PutMapping("/{id}")
     public ResponseEntity<StudyGroup> updateStudyGroup(
             @PathVariable Long id,
-            @RequestBody StudyGroup studyGroup) {
-        return ResponseEntity.ok(studyGroupService.updateStudyGroup(id, studyGroup));
+            @RequestBody StudyGroupDTO studyGroupDTO) {
+        return ResponseEntity.ok(studyGroupService.updateStudyGroup(id, studyGroupDTO));
     }
 
+    // удаление группы по id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudyGroup(@PathVariable Long id) {
         studyGroupService.deleteStudyGroup(id);

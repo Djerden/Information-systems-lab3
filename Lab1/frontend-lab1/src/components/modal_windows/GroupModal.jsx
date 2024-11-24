@@ -108,8 +108,6 @@ export default function GroupModal({
         setError("");
     }
 
-    console.log(editGroup)
-
     const handleSave = async () => {
         // Валидация обязательных полей
         if (!groupData.name.trim()) {
@@ -144,12 +142,15 @@ export default function GroupModal({
         setError(""); // Сбрасываем ошибку
 
         const url = editGroup
-            ? `http://localhost:8080/study-groups/${group.id}`
+            ? `http://localhost:8080/study-groups/${groupData.id}`
             : "http://localhost:8080/study-groups";
 
         const method = editGroup ? "PUT" : "POST";
 
         console.log(groupData);
+        console.log(url)
+        console.log(method)
+        console.log(JSON.stringify(groupData))
 
         try {
             const response = await fetch(url, {
@@ -180,6 +181,9 @@ export default function GroupModal({
         }
     }, [isOpen]);
 
+
+    console.log(editGroup)
+    console.log(groupData)
     return (
         <Modal
             isOpen={isOpen}
