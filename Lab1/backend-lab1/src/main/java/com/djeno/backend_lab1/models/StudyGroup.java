@@ -31,7 +31,7 @@ public class StudyGroup {
     private Coordinates coordinates; //Поле не может быть null
 
     @NotNull(message = "Creation date cannot be null")
-    @Column(name = "creation_date", nullable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
     private java.time.LocalDate creationDate; //Поле не может быть null, Значение этого поля должно генерироваться автоматически
 
     @Positive(message = "Students count must be greater than 0")

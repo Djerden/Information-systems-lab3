@@ -88,11 +88,15 @@ export default function Header() {
         <header className="flex items-center justify-between px-6 py-4 bg-gray-800 text-white shadow-md">
             {/* Левое меню */}
             <div className="flex items-center space-x-6">
-                <span className="text-xl font-bold text-indigo-400">Lab1</span>
+                <span className="text-xl font-bold text-indigo-400">
+                    <NavLink to="/groups" className="hover:text-indigo-300 transition duration-200">
+                        Lab1
+                    </NavLink>
+                </span>
                 <nav className="flex space-x-4">
                     <NavLink
                         to="/groups"
-                        className={({ isActive }) =>
+                        className={({isActive}) =>
                             isActive
                                 ? "text-indigo-400 font-semibold"
                                 : "text-white hover:text-indigo-400"
@@ -102,7 +106,7 @@ export default function Header() {
                     </NavLink>
                     <NavLink
                         to="/admin"
-                        className={({ isActive }) =>
+                        className={({isActive}) =>
                             isActive
                                 ? "text-indigo-400 font-semibold"
                                 : "text-white hover:text-indigo-400"

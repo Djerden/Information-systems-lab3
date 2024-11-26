@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import GroupModal from "../../components/modal_windows/GroupModal.jsx";
 import PersonModal from "../../components/modal_windows/PersonModal.jsx";
 import CoordinatesModal from "../../components/modal_windows/CoordinatesModal.jsx";
 import LocationModal from "../../components/modal_windows/LocationModal.jsx";
+import GroupHistoryModal from "../../components/modal_windows/GroupHistoryModal.jsx";
 
 export default function Groups() {
     const [groups, setGroups] = useState([]);
@@ -21,12 +22,16 @@ export default function Groups() {
 
     const [editGroup, setEditGroup] = useState(false);
 
+    // константы для истории StudyGroup
+    const [selectedGroup, setSelectedGroup] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     // Загружаем группы с сервера
     const fetchGroups = async (page = 0) => {
         try {
             const response = await fetch(
-                `http://localhost:8080/study-groups?page=${page}&size=10`, // Удален параметр сортировки
-                { headers: { Authorization: `Bearer ${token}` } }
+                `http://localhost:8080/study-groups?page=${page}&size=8`, // Удален параметр сортировки
+                {headers: {Authorization: `Bearer ${token}`}}
             );
             if (!response.ok) {
                 console.log("Ошибка загрузки групп");
@@ -41,8 +46,6 @@ export default function Groups() {
             console.error(error);
         }
     };
-
-    console.log(groups)
 
     // Обработчик открытия модального окна для редактирования
     const handleEditGroup = (group) => {
@@ -100,6 +103,16 @@ export default function Groups() {
         }
     };
 
+    const handleViewDetails = (group) => {
+        setSelectedGroup(group); // Устанавливаем выбранный объект
+        setIsModalOpen(true); // Открываем модальное окно
+    };
+
+    const formatEducation = (education) => {
+        if (!education) return "N/A"; // Если значение отсутствует
+        return education.replace(/_/g, " "); // Заменяем все символы "_" на пробел
+    };
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
@@ -139,8 +152,7 @@ export default function Groups() {
                     <tr>
                         <th className="border px-4 py-2">ID</th>
                         <th className="border px-4 py-2">Name</th>
-                        <th className="border px-4 py-2">Coordinate X</th>
-                        <th className="border px-4 py-2">Coordinate Y</th>
+                        <th className="border px-4 py-2">Coordinates</th>
                         <th className="border px-4 py-2">Creation Date</th>
                         <th className="border px-4 py-2">Students Count</th>
                         <th className="border px-4 py-2">Expelled Students</th>
@@ -149,13 +161,13 @@ export default function Groups() {
                         <th className="border px-4 py-2">Should Be Expelled</th>
                         <th className="border px-4 py-2">Semester</th>
                         <th className="border px-4 py-2">Admin Name</th>
-                        <th className="border px-4 py-2">Admin Eye Color</th>
-                        <th className="border px-4 py-2">Admin Hair Color</th>
-                        <th className="border px-4 py-2">Admin Location X</th>
-                        <th className="border px-4 py-2">Admin Location Y</th>
-                        <th className="border px-4 py-2">Admin Location Name</th>
-                        <th className="border px-4 py-2">Admin Weight</th>
-                        <th className="border px-4 py-2">Admin Nationality</th>
+                        {/*<th className="border px-4 py-2">Admin Eye Color</th>*/}
+                        {/*<th className="border px-4 py-2">Admin Hair Color</th>*/}
+                        {/*<th className="border px-4 py-2">Admin Location X</th>*/}
+                        {/*<th className="border px-4 py-2">Admin Location Y</th>*/}
+                        {/*<th className="border px-4 py-2">Admin Location Name</th>*/}
+                        {/*<th className="border px-4 py-2">Admin Weight</th>*/}
+                        {/*<th className="border px-4 py-2">Admin Nationality</th>*/}
                         <th className="border px-4 py-2">Actions</th>
                     </tr>
                     </thead>
@@ -164,25 +176,34 @@ export default function Groups() {
                         <tr key={group.id} className="hover:bg-gray-100">
                             <td className="border px-4 py-2">{group.id}</td>
                             <td className="border px-4 py-2">{group.name}</td>
-                            <td className="border px-4 py-2">{group.coordinates?.x || "N/A"}</td>
-                            <td className="border px-4 py-2">{group.coordinates?.y || "N/A"}</td>
+                            <td className="border px-4 py-2">
+                                X: {group.coordinates.x}
+                                <br/>
+                                Y: {group.coordinates.y}
+                            </td>
                             <td className="border px-4 py-2">{group.creationDate || "N/A"}</td>
                             <td className="border px-4 py-2">{group.studentsCount}</td>
                             <td className="border px-4 py-2">{group.expelledStudents}</td>
                             <td className="border px-4 py-2">{group.transferredStudents || "N/A"}</td>
-                            <td className="border px-4 py-2">{group.formOfEducation || "N/A"}</td>
+                            <td className="border px-4 py-2">{formatEducation(group.formOfEducation)}</td>
                             <td className="border px-4 py-2">{group.shouldBeExpelled}</td>
                             <td className="border px-4 py-2">{group.semesterEnum || "N/A"}</td>
                             <td className="border px-4 py-2">{group.groupAdmin?.name || "N/A"}</td>
-                            <td className="border px-4 py-2">{group.groupAdmin?.eyeColor || "N/A"}</td>
-                            <td className="border px-4 py-2">{group.groupAdmin?.hairColor || "N/A"}</td>
-                            <td className="border px-4 py-2">{group.groupAdmin?.location?.x || "N/A"}</td>
-                            <td className="border px-4 py-2">{group.groupAdmin?.location?.y || "N/A"}</td>
-                            <td className="border px-4 py-2">{group.groupAdmin?.location?.name || "N/A"}</td>
-                            <td className="border px-4 py-2">{group.groupAdmin?.weight || "N/A"}</td>
-                            <td className="border px-4 py-2">{group.groupAdmin?.nationality || "N/A"}</td>
+                            {/*<td className="border px-4 py-2">{group.groupAdmin?.eyeColor || "N/A"}</td>*/}
+                            {/*<td className="border px-4 py-2">{group.groupAdmin?.hairColor || "N/A"}</td>*/}
+                            {/*<td className="border px-4 py-2">{group.groupAdmin?.location?.x || "N/A"}</td>*/}
+                            {/*<td className="border px-4 py-2">{group.groupAdmin?.location?.y || "N/A"}</td>*/}
+                            {/*<td className="border px-4 py-2">{group.groupAdmin?.location?.name || "N/A"}</td>*/}
+                            {/*<td className="border px-4 py-2">{group.groupAdmin?.weight || "N/A"}</td>*/}
+                            {/*<td className="border px-4 py-2">{group.groupAdmin?.nationality || "N/A"}</td>*/}
                             <td className="border px-4 py-2">
                                 <div className="flex space-x-2">
+                                    <button
+                                        className="w-24 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-center"
+                                        onClick={() => handleViewDetails(group)}
+                                    >
+                                        View Details
+                                    </button>
                                     <button
                                         className="w-24 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-center"
                                         onClick={() => handleEditGroup(group)}
@@ -195,6 +216,7 @@ export default function Groups() {
                                     >
                                         Delete
                                     </button>
+
                                 </div>
                             </td>
                         </tr>
@@ -231,8 +253,10 @@ export default function Groups() {
             {/* Модальные окна */}
             <GroupModal
                 isOpen={isGroupModalOpen}
-                onRequestClose={() => {setIsGroupModalOpen(false);
-                                      setEditGroup(false);}}
+                onRequestClose={() => {
+                    setIsGroupModalOpen(false);
+                    setEditGroup(false);
+                }}
                 group={editingGroup}
                 onSave={fetchGroups} // Перезагрузка групп после сохранения
                 editGroup={editGroup}
@@ -248,6 +272,12 @@ export default function Groups() {
             <LocationModal
                 isOpen={isLocationModalOpen}
                 onRequestClose={() => setIsLocationModalOpen(false)}
+            />
+
+            <GroupHistoryModal
+                isOpen={isModalOpen}
+                onRequestClose={() => setIsModalOpen(false)}
+                group={selectedGroup}
             />
         </div>
     );

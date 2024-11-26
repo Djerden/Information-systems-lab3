@@ -2,6 +2,7 @@ package com.djeno.backend_lab1.controllers;
 
 import com.djeno.backend_lab1.DTO.StudyGroupDTO;
 import com.djeno.backend_lab1.models.StudyGroup;
+import com.djeno.backend_lab1.models.StudyGroupHistory;
 import com.djeno.backend_lab1.service.data.StudyGroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,7 @@ public class StudyGroupsContoller {
 
     private final StudyGroupService studyGroupService;
 
+    // Создание новой группы
     @PostMapping
     public ResponseEntity<StudyGroup> createStudyGroup(
             @RequestBody StudyGroupDTO studyGroupDTO) {
@@ -29,6 +31,7 @@ public class StudyGroupsContoller {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdGroup);
     }
 
+    // Получение списка групп
     @GetMapping
     public ResponseEntity<Page<StudyGroup>> getAllStudyGroups(
             @RequestParam(defaultValue = "0") int page,
@@ -38,12 +41,13 @@ public class StudyGroupsContoller {
         return ResponseEntity.ok(studyGroupService.getAllStudyGroups(pageable));
     }
 
+    // Получение группы по id
     @GetMapping("/{id}")
     public ResponseEntity<StudyGroup> getStudyGroupById(@PathVariable Long id) {
         return ResponseEntity.ok(studyGroupService.getStudyGroupById(id));
     }
 
-    // изменение группы по id
+    // Изменение группы по id
     @PutMapping("/{id}")
     public ResponseEntity<StudyGroup> updateStudyGroup(
             @PathVariable Long id,
@@ -51,11 +55,16 @@ public class StudyGroupsContoller {
         return ResponseEntity.ok(studyGroupService.updateStudyGroup(id, studyGroupDTO));
     }
 
-    // удаление группы по id
+    // Удаление группы по id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudyGroup(@PathVariable Long id) {
         studyGroupService.deleteStudyGroup(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<List<StudyGroupHistory>> getStudyGroupHistory(@PathVariable Long id) {
+        return ResponseEntity.ok(studyGroupService.getHistory(id));
     }
 
     @GetMapping("/min-expelled-students")

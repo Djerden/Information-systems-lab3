@@ -138,6 +138,8 @@ export default function GroupModal({
             return;
         }
 
+        console.log(groupData)
+
         // Если валидация прошла успешно
         setError(""); // Сбрасываем ошибку
 
@@ -147,10 +149,10 @@ export default function GroupModal({
 
         const method = editGroup ? "PUT" : "POST";
 
-        console.log(groupData);
-        console.log(url)
-        console.log(method)
-        console.log(JSON.stringify(groupData))
+        // console.log(groupData);
+        // console.log(url)
+        // console.log(method)
+        // console.log(JSON.stringify(groupData))
 
         try {
             const response = await fetch(url, {
@@ -182,8 +184,6 @@ export default function GroupModal({
     }, [isOpen]);
 
 
-    console.log(editGroup)
-    console.log(groupData)
     return (
         <Modal
             isOpen={isOpen}
