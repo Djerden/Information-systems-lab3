@@ -5,6 +5,8 @@ import com.djeno.backend_lab1.models.enums.AdminRequestStatus;
 import com.djeno.backend_lab1.models.enums.Role;
 import com.djeno.backend_lab1.repositories.AdminRequestRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +17,14 @@ public class AdminRequestService {
     private final UserService userService;
     private final AdminRequestRepository adminRequestRepository;
 
-    // Получение всех заявок
-    public List<AdminRequest> getAllRequests() {
-        return adminRequestRepository.findAll();
+    // Получить все заявки с пагинацией и сортировкой
+    public Page<AdminRequest> getAllRequests(Pageable pageable) {
+        return adminRequestRepository.findAll(pageable);
+    }
+
+    // Получить заявки по статусу с пагинацией и сортировкой
+    public Page<AdminRequest> getRequestsByStatus(AdminRequestStatus status, Pageable pageable) {
+        return adminRequestRepository.findByStatus(status, pageable);
     }
 
     // Создание заявки
