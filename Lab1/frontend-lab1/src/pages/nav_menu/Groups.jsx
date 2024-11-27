@@ -26,33 +26,58 @@ export default function Groups() {
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // Фильтрация и сортировка
+    const [filterName, setFilterName] = useState("");
+    const [filterFormOfEducation, setFilterFormOfEducation] = useState("");
+    const [filterSemester, setFilterSemester] = useState("");
+    const [filterAdminName, setFilterAdminName] = useState("");
+    const [sortBy, setSortBy] = useState("creationDate");
+    const [sortDirection, setSortDirection] = useState("desc");
+
     // Загружаем группы с сервера
     const fetchGroups = async (page = 0) => {
         try {
-            const response = await fetch(
-                `http://localhost:8080/study-groups?page=${page}&size=8`, // Удален параметр сортировки
-                {headers: {Authorization: `Bearer ${token}`}}
-            );
+            const params = new URLSearchParams({
+                page,
+                size: 7,
+                sortBy,
+                sortDirection,
+            });
+
+            // Добавляем параметры только если они не пустые
+            if (filterName) params.append("name", filterName);
+            if (filterFormOfEducation) params.append("formOfEducation", filterFormOfEducation);
+            if (filterSemester) params.append("semesterEnum", filterSemester);
+            if (filterAdminName) params.append("adminName", filterAdminName);
+
+            console.log(`Запрос к серверу: http://localhost:8080/study-groups/filter?${params.toString()}`);
+
+            const response = await fetch(`http://localhost:8080/study-groups/filter?${params.toString()}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
             if (!response.ok) {
-                console.log("Ошибка загрузки групп");
                 throw new Error("Ошибка загрузки групп");
             }
-            const data = await response.json();
-            setGroups(data.content); // Устанавливаем полученные группы
 
-            setTotalPages(data.totalPages); // Устанавливаем общее количество страниц
-            setCurrentPage(data.number); // Устанавливаем текущую страницу
+            const data = await response.json();
+            console.log("Данные получены: ", data);
+
+            setGroups(data.content);
+            setTotalPages(data.totalPages);
+            setCurrentPage(data.number);
         } catch (error) {
-            console.error(error);
+            console.error("Ошибка во время загрузки данных: ", error);
         }
     };
 
-    // Обработчик открытия модального окна для редактирования
-    const handleEditGroup = (group) => {
-        setEditGroup(true);
-        setEditingGroup(group);
-        setIsGroupModalOpen(true);
-    };
+
+
+    useEffect(() => {
+        fetchGroups();
+    }, [sortBy, sortDirection, filterName, filterFormOfEducation, filterSemester, filterAdminName]);
+
+
 
     // Обработчик открытия модального окна для создания новой группы
     const handleCreateGroup = () => {
@@ -60,9 +85,7 @@ export default function Groups() {
         setIsGroupModalOpen(true);
     };
 
-    useEffect(() => {
-        fetchGroups();
-    }, []);
+
 
     // Переход на следующую страницу
     const handleNextPage = () => {
@@ -78,12 +101,22 @@ export default function Groups() {
         }
     };
 
+    const handleViewDetails = (group) => {
+        setSelectedGroup(group); // Устанавливаем выбранный объект
+        setIsModalOpen(true); // Открываем модальное окно
+    };
+
+    // Обработчик открытия модального окна для редактирования
+    const handleEditGroup = (group) => {
+        setEditGroup(true);
+        setEditingGroup(group);
+        setIsGroupModalOpen(true);
+    };
+
     const handleDeleteGroup = async (groupId) => {
         if (!window.confirm("Are you sure you want to delete this group?")) {
             return; // Пользователь отменил удаление
         }
-
-        console.log(groupId);
 
         try {
             const response = await fetch(`http://localhost:8080/study-groups/${groupId}`, {
@@ -103,10 +136,6 @@ export default function Groups() {
         }
     };
 
-    const handleViewDetails = (group) => {
-        setSelectedGroup(group); // Устанавливаем выбранный объект
-        setIsModalOpen(true); // Открываем модальное окно
-    };
 
     const formatEducation = (education) => {
         if (!education) return "N/A"; // Если значение отсутствует
@@ -145,6 +174,101 @@ export default function Groups() {
                 </div>
             </div>
 
+            {/* Панель фильтрации и сортировки */}
+            <div className="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label className="block font-medium mb-1">Filter by Name:</label>
+                    <input
+                        type="text"
+                        value={filterName}
+                        onChange={(e) => setFilterName(e.target.value)}
+                        className="w-full px-4 py-2 border rounded"
+                    />
+                </div>
+                <div>
+                    <label className="block font-medium mb-1">Filter by Form of Education:</label>
+                    <select
+                        value={filterFormOfEducation}
+                        onChange={(e) => setFilterFormOfEducation(e.target.value)}
+                        className="w-full px-4 py-2 border rounded"
+                    >
+                        <option value="">All</option>
+                        <option value="FULL_TIME_EDUCATION">Full Time Education</option>
+                        <option value="DISTANCE_EDUCATION">Distance Education</option>
+                        <option value="EVENING_CLASSES">Evening Classes</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block font-medium mb-1">Sort By:</label>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="w-full px-4 py-2 border rounded"
+                    >
+                        <option value="creationDate">Creation Date</option>
+                        <option value="name">Name</option>
+                        <option value="studentsCount">Students Count</option>
+                        <option value="transferredStudents">Transferred Students</option>
+                        <option value="shouldBeExpelled">Should Be Expelled</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block font-medium mb-1">Filter by Admin Name:</label>
+                    <input
+                        type="text"
+                        value={filterAdminName}
+                        onChange={(e) => setFilterAdminName(e.target.value)}
+                        className="w-full px-4 py-2 border rounded"
+                    />
+                </div>
+                <div>
+                    <label className="block font-medium mb-1">Filter by Semester:</label>
+                    <select
+                        value={filterSemester}
+                        onChange={(e) => setFilterSemester(e.target.value)}
+                        className="w-full px-4 py-2 border rounded"
+                    >
+                        <option value="">All</option>
+                        <option value="FIRST">First</option>
+                        <option value="SECOND">Second</option>
+                        <option value="THIRD">Third</option>
+                        <option value="FOURTH">Fourth</option>
+                        <option value="FIFTH">Fifth</option>
+                        <option value="SIXTH">Sixth</option>
+                        <option value="SEVENTH">Seventh</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="block font-medium mb-1">Sort Direction:</label>
+                    <select
+                        value={sortDirection}
+                        onChange={(e) => setSortDirection(e.target.value)}
+                        className="w-full px-4 py-2 border rounded"
+                    >
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </div>
+                {/* Кнопка сброса фильтров */}
+                <div className="col-span-3">
+                    <button
+                        onClick={() => {
+                            setFilterName("");
+                            setFilterFormOfEducation("");
+                            setFilterSemester("");
+                            setFilterAdminName("");
+                            setSortBy("creationDate");
+                            setSortDirection("desc");
+                            fetchGroups(); // Обновляем данные после сброса
+                        }}
+                        className="w-full px-4 py-1 bg-gray-200 text-gray-700 border border-gray-300 rounded
+                   hover:bg-red-500 hover:text-white hover:border-red-600 transition duration-200"
+                    >
+                        Reset Filters
+                    </button>
+                </div>
+            </div>
+
             {/* Таблица с группами */}
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-300 rounded shadow">
@@ -161,13 +285,6 @@ export default function Groups() {
                         <th className="border px-4 py-2">Should Be Expelled</th>
                         <th className="border px-4 py-2">Semester</th>
                         <th className="border px-4 py-2">Admin Name</th>
-                        {/*<th className="border px-4 py-2">Admin Eye Color</th>*/}
-                        {/*<th className="border px-4 py-2">Admin Hair Color</th>*/}
-                        {/*<th className="border px-4 py-2">Admin Location X</th>*/}
-                        {/*<th className="border px-4 py-2">Admin Location Y</th>*/}
-                        {/*<th className="border px-4 py-2">Admin Location Name</th>*/}
-                        {/*<th className="border px-4 py-2">Admin Weight</th>*/}
-                        {/*<th className="border px-4 py-2">Admin Nationality</th>*/}
                         <th className="border px-4 py-2">Actions</th>
                     </tr>
                     </thead>
@@ -189,20 +306,13 @@ export default function Groups() {
                             <td className="border px-4 py-2">{group.shouldBeExpelled}</td>
                             <td className="border px-4 py-2">{group.semesterEnum || "N/A"}</td>
                             <td className="border px-4 py-2">{group.groupAdmin?.name || "N/A"}</td>
-                            {/*<td className="border px-4 py-2">{group.groupAdmin?.eyeColor || "N/A"}</td>*/}
-                            {/*<td className="border px-4 py-2">{group.groupAdmin?.hairColor || "N/A"}</td>*/}
-                            {/*<td className="border px-4 py-2">{group.groupAdmin?.location?.x || "N/A"}</td>*/}
-                            {/*<td className="border px-4 py-2">{group.groupAdmin?.location?.y || "N/A"}</td>*/}
-                            {/*<td className="border px-4 py-2">{group.groupAdmin?.location?.name || "N/A"}</td>*/}
-                            {/*<td className="border px-4 py-2">{group.groupAdmin?.weight || "N/A"}</td>*/}
-                            {/*<td className="border px-4 py-2">{group.groupAdmin?.nationality || "N/A"}</td>*/}
                             <td className="border px-4 py-2">
                                 <div className="flex space-x-2">
                                     <button
                                         className="w-24 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-center"
                                         onClick={() => handleViewDetails(group)}
                                     >
-                                        View Details
+                                        Details
                                     </button>
                                     <button
                                         className="w-24 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-center"
@@ -226,25 +336,29 @@ export default function Groups() {
             </div>
 
             {/* Навигация по страницам */}
-            <div className="flex justify-between items-center mt-4">
+            <div className="mt-4 flex justify-between items-center">
                 <button
-                    className={`px-4 py-2 bg-gray-300 text-gray-700 rounded ${
-                        currentPage === 0 ? "cursor-not-allowed opacity-50" : ""
-                    }`}
                     onClick={handlePreviousPage}
                     disabled={currentPage === 0}
+                    className={`px-4 py-2 rounded ${
+                        currentPage === 0
+                            ? "bg-gray-300 cursor-not-allowed"
+                            : "bg-indigo-500 text-white hover:bg-indigo-600"
+                    }`}
                 >
                     Previous
                 </button>
-                <span className="text-gray-700">
+                <span>
                     Page {currentPage + 1} of {totalPages}
                 </span>
                 <button
-                    className={`px-4 py-2 bg-gray-300 text-gray-700 rounded ${
-                        currentPage === totalPages - 1 ? "cursor-not-allowed opacity-50" : ""
-                    }`}
                     onClick={handleNextPage}
-                    disabled={currentPage === totalPages - 1}
+                    disabled={currentPage + 1 >= totalPages}
+                    className={`px-4 py-2 rounded ${
+                        currentPage + 1 >= totalPages
+                            ? "bg-gray-300 cursor-not-allowed"
+                            : "bg-indigo-500 text-white hover:bg-indigo-600"
+                    }`}
                 >
                     Next
                 </button>

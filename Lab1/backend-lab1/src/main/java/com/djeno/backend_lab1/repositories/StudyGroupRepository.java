@@ -8,6 +8,7 @@ import com.djeno.backend_lab1.models.enums.FormOfEducation;
 import com.djeno.backend_lab1.models.enums.Semester;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
+public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long>, JpaSpecificationExecutor<StudyGroup> {
 
     // Проверка, принадлежит ли объект указанному пользователю
     boolean existsByIdAndUserId(Long id, Long userId);

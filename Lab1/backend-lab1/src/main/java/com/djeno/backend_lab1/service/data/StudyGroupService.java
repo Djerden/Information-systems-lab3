@@ -10,12 +10,14 @@ import com.djeno.backend_lab1.repositories.CoordinatesRepository;
 import com.djeno.backend_lab1.repositories.PersonRepository;
 import com.djeno.backend_lab1.repositories.StudyGroupHistoryRepository;
 import com.djeno.backend_lab1.repositories.StudyGroupRepository;
+import com.djeno.backend_lab1.service.StudyGroupSpecification;
 import com.djeno.backend_lab1.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -92,6 +94,24 @@ public class StudyGroupService {
 
     public Page<StudyGroup> getAllStudyGroups(Pageable pageable) {
         return studyGroupRepository.findAll(pageable);
+    }
+
+    public Page<StudyGroup> filterAndSortStudyGroups(
+            String name,
+            FormOfEducation formOfEducation,
+            Semester semesterEnum,
+            LocalDate creationDate,
+            String adminName,
+            Pageable pageable) {
+
+        Specification<StudyGroup> spec = Specification
+                .where(StudyGroupSpecification.hasName(name))
+                .and(StudyGroupSpecification.hasFormOfEducation(formOfEducation))
+                .and(StudyGroupSpecification.hasSemester(semesterEnum))
+                .and(StudyGroupSpecification.createdOn(creationDate))
+                .and(StudyGroupSpecification.hasAdminName(adminName)); // Добавлено условие
+
+        return studyGroupRepository.findAll(spec, pageable);
     }
 
 
