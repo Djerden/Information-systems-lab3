@@ -5,6 +5,9 @@ import CoordinatesModal from "../../components/modal_windows/CoordinatesModal.js
 import LocationModal from "../../components/modal_windows/LocationModal.jsx";
 import GroupHistoryModal from "../../components/modal_windows/GroupHistoryModal.jsx";
 
+import { Client } from "@stomp/stompjs";  // импортируем клиента для WebSocket
+
+
 export default function Groups() {
     const [groups, setGroups] = useState([]);
     const [editingGroup, setEditingGroup] = useState(null);
@@ -71,12 +74,48 @@ export default function Groups() {
         }
     };
 
-
+    console.log('Страница = ' + currentPage)
 
     useEffect(() => {
         fetchGroups();
     }, [sortBy, sortDirection, filterName, filterFormOfEducation, filterSemester, filterAdminName]);
 
+    useEffect(() => {
+        const client = new Client({
+            brokerURL: "ws://localhost:8080/ws", // URL для подключения WebSocket
+            // connectHeaders: {
+            //     Authorization: `Bearer ${token}`, // отправляем токен для авторизации
+            // },
+            debug: (str) => console.log(str),
+            onConnect: () => {
+                console.log("WebSocket connected");
+                // Подписка на канал для уведомлений по обновлениям группы
+                client.subscribe("/topic/study-groups", (message) => {
+                    // Когда уведомление приходит, обновляем данные
+                    console.log("Received data:", message.body); // Логируем полученные данные
+
+                    console.log(currentPage)
+                    console.log(sortBy)
+                    console.log(sortDirection)
+                    console.log(filterName)
+                    console.log(filterSemester)
+                    console.log(filterFormOfEducation)
+                    console.log(filterAdminName)
+                    fetchGroups(currentPage); // Обновляем данные с сервера (текущая страница будет автоматически учитываться)
+                });
+            },
+            onStompError: (frame) => {
+                console.error("STOMP error: " + frame);
+            },
+        });
+
+        client.activate(); // Активация клиента
+
+        // Очистка при размонтировании компонента
+        return () => {
+            client.deactivate();
+        };
+    }, [currentPage, sortBy, sortDirection, filterName, filterFormOfEducation, filterSemester, filterAdminName]); // Подписка на уведомления при изменении токена (не зависит от страницы)
 
 
     // Обработчик открытия модального окна для создания новой группы
@@ -84,8 +123,6 @@ export default function Groups() {
         setEditingGroup(null);
         setIsGroupModalOpen(true);
     };
-
-
 
     // Переход на следующую страницу
     const handleNextPage = () => {
@@ -135,7 +172,6 @@ export default function Groups() {
             alert("Failed to delete group. Please try again.");
         }
     };
-
 
     const formatEducation = (education) => {
         if (!education) return "N/A"; // Если значение отсутствует

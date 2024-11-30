@@ -12,6 +12,7 @@ import com.djeno.backend_lab1.repositories.StudyGroupHistoryRepository;
 import com.djeno.backend_lab1.repositories.StudyGroupRepository;
 import com.djeno.backend_lab1.service.StudyGroupSpecification;
 import com.djeno.backend_lab1.service.UserService;
+import com.djeno.backend_lab1.service.WebSocketNotificationService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,9 @@ import java.util.List;
 import java.util.Optional;
 
 
-@RequiredArgsConstructor
+
 @Service
+@RequiredArgsConstructor
 public class StudyGroupService {
 
     private final StudyGroupRepository studyGroupRepository;
@@ -37,53 +39,7 @@ public class StudyGroupService {
     private final PersonService personService;
     private final UserService userService;
 
-    public StudyGroup createStudyGroup(StudyGroupDTO studyGroupDTO) {
-        var currentUser = userService.getCurrentUser();
-
-        // Извлечение Coordinates по id из DTO
-        Coordinates coordinates = coordinatesRepository.findById(studyGroupDTO.getCoordinatesId())
-                .orElseThrow(() -> new RuntimeException("Coordinates not found"));
-
-        // Извлечение Admin по id из DTO (если указан)
-        Person admin = null;
-        if (studyGroupDTO.getGroupAdminId() != null) {
-            System.out.println(studyGroupDTO.getGroupAdminId());
-            admin = personService.getPersonById(studyGroupDTO.getGroupAdminId());
-        }
-
-        // Преобразование DTO в Entity
-        StudyGroup studyGroup = new StudyGroup();
-        studyGroup.setCreationDate(LocalDate.now()); // Устанавливаем дату создания
-        fromDTO(studyGroup, studyGroupDTO, coordinates, admin, currentUser);
-
-        // Сохранение StudyGroup
-        return studyGroupRepository.save(studyGroup);
-    }
-
-    public static void fromDTO(StudyGroup studyGroup, StudyGroupDTO dto, Coordinates coordinates, Person admin, User user) {
-
-        studyGroup.setName(dto.getName());
-        studyGroup.setCoordinates(coordinates); // Устанавливаем объект Coordinates
-        //studyGroup.setCreationDate(LocalDate.now()); // Автоматическая установка даты
-        studyGroup.setStudentsCount(dto.getStudentsCount());
-        studyGroup.setExpelledStudents(dto.getExpelledStudents());
-        studyGroup.setTransferredStudents(dto.getTransferredStudents());
-
-        // Проверка на пустую строку или null для FormOfEducation
-        studyGroup.setFormOfEducation(dto.getFormOfEducation() != null && !dto.getFormOfEducation().isEmpty()
-                ? FormOfEducation.valueOf(dto.getFormOfEducation())
-                : null);
-
-        studyGroup.setShouldBeExpelled(dto.getShouldBeExpelled());
-
-        // Проверка на пустую строку или null для SemesterEnum
-        studyGroup.setSemesterEnum(dto.getSemesterEnum() != null && !dto.getSemesterEnum().isEmpty()
-                ? Semester.valueOf(dto.getSemesterEnum())
-                : null);
-
-        studyGroup.setGroupAdmin(admin); // Устанавливаем объект Admin (если есть)
-        studyGroup.setUser(user); // Устанавливаем текущего пользователя
-    }
+    private final WebSocketNotificationService notificationService;
 
     // Получение группы по ID с проверкой доступа
     public StudyGroup getStudyGroupById(Long id) {
@@ -114,6 +70,31 @@ public class StudyGroupService {
         return studyGroupRepository.findAll(spec, pageable);
     }
 
+    public StudyGroup createStudyGroup(StudyGroupDTO studyGroupDTO) {
+        var currentUser = userService.getCurrentUser();
+
+        // Извлечение Coordinates по id из DTO
+        Coordinates coordinates = coordinatesRepository.findById(studyGroupDTO.getCoordinatesId())
+                .orElseThrow(() -> new RuntimeException("Coordinates not found"));
+
+        // Извлечение Admin по id из DTO (если указан)
+        Person admin = null;
+        if (studyGroupDTO.getGroupAdminId() != null) {
+            System.out.println(studyGroupDTO.getGroupAdminId());
+            admin = personService.getPersonById(studyGroupDTO.getGroupAdminId());
+        }
+
+        // Преобразование DTO в Entity
+        StudyGroup studyGroup = new StudyGroup();
+        studyGroup.setCreationDate(LocalDate.now()); // Устанавливаем дату создания
+        fromDTO(studyGroup, studyGroupDTO, coordinates, admin, currentUser);
+
+        // Отправка уведомления о создании новой группы
+        notificationService.sendNotification("study-groups", "created");
+
+        // Сохранение StudyGroup
+        return studyGroupRepository.save(studyGroup);
+    }
 
     // Обновление группы
     public StudyGroup updateStudyGroup(Long id, StudyGroupDTO studyGroupDTO) {
@@ -136,6 +117,9 @@ public class StudyGroupService {
 
         fromDTO(existingStudyGroup, studyGroupDTO, coordinates, admin, existingStudyGroup.getUser());
 
+        // Отправка уведомления об обновлении группы
+        notificationService.sendNotification("study-groups", "updated");
+
         return studyGroupRepository.save(existingStudyGroup);
     }
 
@@ -149,6 +133,9 @@ public class StudyGroupService {
         historyRepository.deleteAll(historyRepository.findByStudyGroupIdOrderByVersionDesc(id));
 
         studyGroupRepository.deleteById(id);
+
+        // Отправка уведомления об удалении группы
+        notificationService.sendNotification("study-groups", "deleted");
     }
     // Получение истории изменений группы по id
     public List<StudyGroupHistory> getHistory(Long studyGroupId) {
@@ -219,6 +206,31 @@ public class StudyGroupService {
         history.setUpdatedBy(currentUser);
 
         historyRepository.save(history);
+    }
+
+    public static void fromDTO(StudyGroup studyGroup, StudyGroupDTO dto, Coordinates coordinates, Person admin, User user) {
+
+        studyGroup.setName(dto.getName());
+        studyGroup.setCoordinates(coordinates); // Устанавливаем объект Coordinates
+        //studyGroup.setCreationDate(LocalDate.now()); // Автоматическая установка даты
+        studyGroup.setStudentsCount(dto.getStudentsCount());
+        studyGroup.setExpelledStudents(dto.getExpelledStudents());
+        studyGroup.setTransferredStudents(dto.getTransferredStudents());
+
+        // Проверка на пустую строку или null для FormOfEducation
+        studyGroup.setFormOfEducation(dto.getFormOfEducation() != null && !dto.getFormOfEducation().isEmpty()
+                ? FormOfEducation.valueOf(dto.getFormOfEducation())
+                : null);
+
+        studyGroup.setShouldBeExpelled(dto.getShouldBeExpelled());
+
+        // Проверка на пустую строку или null для SemesterEnum
+        studyGroup.setSemesterEnum(dto.getSemesterEnum() != null && !dto.getSemesterEnum().isEmpty()
+                ? Semester.valueOf(dto.getSemesterEnum())
+                : null);
+
+        studyGroup.setGroupAdmin(admin); // Устанавливаем объект Admin (если есть)
+        studyGroup.setUser(user); // Устанавливаем текущего пользователя
     }
 
 

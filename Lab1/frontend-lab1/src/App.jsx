@@ -28,6 +28,14 @@ function App() {
                     )
                 },
                 {
+                    path: '/special',
+                    element: (
+                        <ProtectedRoute>
+                            <Groups/>
+                        </ProtectedRoute>
+                    )
+                },
+                {
                     path: '/admin',
                     element: (
                         <ProtectedRoute allowedRole={"ROLE_ADMIN"}>

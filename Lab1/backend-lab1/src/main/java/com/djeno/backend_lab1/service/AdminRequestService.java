@@ -17,6 +17,9 @@ public class AdminRequestService {
     private final UserService userService;
     private final AdminRequestRepository adminRequestRepository;
 
+    private final WebSocketNotificationService webSocketNotificationService;
+
+
     // Получить все заявки с пагинацией и сортировкой
     public Page<AdminRequest> getAllRequests(Pageable pageable) {
         return adminRequestRepository.findAll(pageable);
@@ -45,6 +48,8 @@ public class AdminRequestService {
                     .status(AdminRequestStatus.PENDING)
                     .build();
             adminRequestRepository.save(request);
+
+            webSocketNotificationService.sendNotification("admin-request", "created");
         }
     }
 
@@ -60,6 +65,8 @@ public class AdminRequestService {
         var user = request.getUser();
         user.setRole(Role.ROLE_ADMIN);
         userService.save(user);
+
+        webSocketNotificationService.sendNotification("admin-request", "approved");
     }
 
     // Отклонение заявки
@@ -69,6 +76,8 @@ public class AdminRequestService {
 
         request.setStatus(AdminRequestStatus.REJECTED);
         adminRequestRepository.save(request);
+
+        webSocketNotificationService.sendNotification("admin-request", "rejected");
     }
 }
 

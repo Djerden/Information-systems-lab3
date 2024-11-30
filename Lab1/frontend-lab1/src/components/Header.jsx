@@ -105,6 +105,16 @@ export default function Header() {
                         All Groups
                     </NavLink>
                     <NavLink
+                        to="/special"
+                        className={({isActive}) =>
+                            isActive
+                                ? "text-indigo-400 font-semibold"
+                                : "text-white hover:text-indigo-400"
+                        }
+                    >
+                        Special Functions
+                    </NavLink>
+                    <NavLink
                         to="/admin"
                         className={({isActive}) =>
                             isActive

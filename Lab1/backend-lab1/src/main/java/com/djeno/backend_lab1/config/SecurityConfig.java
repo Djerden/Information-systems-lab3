@@ -45,6 +45,7 @@ public class SecurityConfig {
                 // Своего рода отключение CORS (разрешение запросов со всех доменов)
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new CorsConfiguration();
+                    //corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173"));
                     corsConfiguration.setAllowedOriginPatterns(List.of("*"));
                     corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     corsConfiguration.setAllowedHeaders(List.of("*"));
@@ -55,7 +56,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/ws/**").authenticated() // Защита WebSocket
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
 
                         // Эндпоинт подачи заявки (требуется только аутентификация)
@@ -92,33 +93,8 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    // не работает, используется только DaoAuthenticationProvider
-    @Bean
-    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-        var admin = org.springframework.security.core.userdetails.User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("admin123"))
-                .roles("ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin);
-    }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
-//    @Bean
-//    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-//        AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-//
-//        // Добавляем оба механизма аутентификации
-//        auth.authenticationProvider(authenticationProvider()); // для базы данных
-//        auth.userDetailsService(inMemoryUserDetailsManager()); // для in-memory
-//
-//        return auth.build();
-//    }
-
-
 }

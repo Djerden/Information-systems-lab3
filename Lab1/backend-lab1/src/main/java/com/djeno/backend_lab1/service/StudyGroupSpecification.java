@@ -9,9 +9,21 @@ import java.time.LocalDate;
 
 public class StudyGroupSpecification {
 
+//    public static Specification<StudyGroup> hasName(String name) {
+//        return (root, query, criteriaBuilder) -> name == null ? null :
+//                criteriaBuilder.equal(root.get("name"), name);
+//    }
+
+    // Поиск по подстроке в имени группы
     public static Specification<StudyGroup> hasName(String name) {
         return (root, query, criteriaBuilder) -> name == null ? null :
-                criteriaBuilder.equal(root.get("name"), name);
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+    }
+
+    // Поиск по подстроке в имени администратора
+    public static Specification<StudyGroup> hasAdminName(String adminName) {
+        return (root, query, criteriaBuilder) -> adminName == null ? null :
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("groupAdmin").get("name")), "%" + adminName.toLowerCase() + "%");
     }
 
     public static Specification<StudyGroup> hasFormOfEducation(FormOfEducation formOfEducation) {
@@ -29,8 +41,8 @@ public class StudyGroupSpecification {
                 criteriaBuilder.equal(root.get("creationDate"), creationDate);
     }
 
-    public static Specification<StudyGroup> hasAdminName(String adminName) {
-        return (root, query, criteriaBuilder) -> adminName == null ? null :
-                criteriaBuilder.equal(root.get("groupAdmin").get("name"), adminName);
-    }
+//    public static Specification<StudyGroup> hasAdminName(String adminName) {
+//        return (root, query, criteriaBuilder) -> adminName == null ? null :
+//                criteriaBuilder.equal(root.get("groupAdmin").get("name"), adminName);
+//    }
 }

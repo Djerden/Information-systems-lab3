@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Client } from "@stomp/stompjs";
+
 
 export default function AdminPanel() {
     const [requests, setRequests] = useState([]); // List of requests
@@ -12,6 +14,33 @@ export default function AdminPanel() {
     const [page, setPage] = useState(0); // Current page
     const [size, setSize] = useState(10); // Page size
     const [totalPages, setTotalPages] = useState(1); // Total number of pages
+
+    // WebSocket client
+    useEffect(() => {
+        const client = new Client({
+            brokerURL: "ws://localhost:8080/ws", // URL для подключения WebSocket
+            debug: (str) => console.log(str),
+            onConnect: () => {
+                console.log("WebSocket connected");
+                // Подписка на канал для получения обновлений заявок
+                client.subscribe("/topic/admin-request", (message) => {
+                    // Когда получаем обновление, обновляем данные
+                    console.log("Received data:", message.body); // Логируем полученные данные
+                    fetchRequests(); // Обновляем список заявок с сервера
+                });
+            },
+            onStompError: (frame) => {
+                console.error("STOMP error: " + frame);
+            },
+        });
+
+        client.activate(); // Активация WebSocket клиента
+
+        // Очистка при размонтировании компонента
+        return () => {
+            client.deactivate();
+        };
+    }, [sortBy, sortDirection, statusFilter, page, size]); // Подписка на обновления при изменении токена
 
     // Fetch requests with sorting and filtering
     const fetchRequests = async () => {
@@ -87,8 +116,8 @@ export default function AdminPanel() {
                 throw new Error(errorData.message || "Failed to approve request");
             }
 
-            alert("Request approved successfully");
-            fetchRequests(); // Refresh the list
+            // alert("Request approved successfully");
+            // fetchRequests(); // Refresh the list
         } catch (error) {
             alert(`Error: ${error.message}`);
         }
@@ -109,8 +138,8 @@ export default function AdminPanel() {
                 throw new Error(errorData.message || "Failed to reject request");
             }
 
-            alert("Request rejected successfully");
-            fetchRequests(); // Refresh the list
+            // alert("Request rejected successfully");
+            // fetchRequests(); // Refresh the list
         } catch (error) {
             alert(`Error: ${error.message}`);
         }
