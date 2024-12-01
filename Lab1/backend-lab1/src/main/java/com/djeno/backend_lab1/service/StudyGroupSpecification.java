@@ -9,11 +9,6 @@ import java.time.LocalDate;
 
 public class StudyGroupSpecification {
 
-//    public static Specification<StudyGroup> hasName(String name) {
-//        return (root, query, criteriaBuilder) -> name == null ? null :
-//                criteriaBuilder.equal(root.get("name"), name);
-//    }
-
     // Поиск по подстроке в имени группы
     public static Specification<StudyGroup> hasName(String name) {
         return (root, query, criteriaBuilder) -> name == null ? null :
@@ -40,9 +35,4 @@ public class StudyGroupSpecification {
         return (root, query, criteriaBuilder) -> creationDate == null ? null :
                 criteriaBuilder.equal(root.get("creationDate"), creationDate);
     }
-
-//    public static Specification<StudyGroup> hasAdminName(String adminName) {
-//        return (root, query, criteriaBuilder) -> adminName == null ? null :
-//                criteriaBuilder.equal(root.get("groupAdmin").get("name"), adminName);
-//    }
 }

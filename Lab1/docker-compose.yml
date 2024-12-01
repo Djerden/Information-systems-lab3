@@ -1,0 +1,45 @@
+services:
+  # Сервис для фронтенда (React с Vite)
+  frontend:
+    build:
+      context: ./frontend-lab1  # Путь к папке с исходниками фронтенда
+      dockerfile: Dockerfile  # Указание на Dockerfile для фронтенда
+    ports:
+      - "5173:80"  # Прокси порт для доступа к фронтенду через HTTP
+    depends_on:
+      - backend  # Фронтенд будет запускаться после бэкенда
+    networks:
+      - app-network
+
+  # Сервис для бэкенда (Spring Boot)
+  backend:
+    build:
+      context: ./backend-lab1  # Путь к папке с исходниками бэкенда
+      dockerfile: Dockerfile  # Указание на Dockerfile для бэкенда
+    ports:
+      - "8080:8080"  # Прокси порт для доступа к бэкенду
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/mydb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db  # Бэкенд будет запускаться после базы данных
+    networks:
+      - app-network
+
+  # Сервис для базы данных (PostgreSQL)
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=is-lab1-db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5454:5432"  # Прокси порт для доступа к БД
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
