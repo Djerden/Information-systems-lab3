@@ -19,7 +19,7 @@ services:
     ports:
       - "8080:8080"  # Прокси порт для доступа к бэкенду
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/mydb
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/is-lab1-db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
@@ -36,7 +36,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:
-      - "5454:5432"  # Прокси порт для доступа к БД
+      - "5432:5432"  # Прокси порт для доступа к БД
     networks:
       - app-network
 
