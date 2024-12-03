@@ -52,7 +52,7 @@ export default function GroupDetailsModal({ isOpen, onRequestClose, group }) {
         } else if (key === "groupAdmin") {
             return (
                 <span>
-                <strong>Name:</strong> {value.name}, <strong>Eye Color:</strong> {value.eyeColor}, <strong>Hair Color:</strong> {value.hairColor}, <strong>Location:</strong> (X: {value.location?.x}, Y: {value.location?.y}, Name: {value.location?.name}), <strong>Weight:</strong> {value.weight}, <strong>Nationality:</strong> {value.nationality}
+                <strong>ID:</strong> {value.id}, <strong>Name:</strong> {value.name}, <strong>Name:</strong> {value.name}, <strong>Eye Color:</strong> {value.eyeColor}, <strong>Hair Color:</strong> {value.hairColor}, <strong>Location:</strong> (X: {value.location?.x}, Y: {value.location?.y}, Name: {value.location?.name}), <strong>Weight:</strong> {value.weight}, <strong>Nationality:</strong> {value.nationality}
             </span>
             );
         } else if (key === "user") {

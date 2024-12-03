@@ -37,8 +37,15 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5432:5432"  # Прокси порт для доступа к БД
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Добавление volume для сохранения данных
     networks:
       - app-network
+
+# Определение volume
+volumes:
+  postgres_data:
+    driver: local
 
 networks:
   app-network:

@@ -6,6 +6,7 @@ import AdminPanel from "./pages/nav_menu/AdminPanel.jsx";
 import SignInPage from "./pages/auth/SignInPage.jsx";
 import SignUpPage from "./pages/auth/SignUpPage.jsx";
 import ProtectedRoute from "./components/security/ProtectedRoute.jsx";
+import SpecialFunctions from "./pages/nav_menu/SpecialFunctions.jsx";
 
 function App() {
 
@@ -31,7 +32,7 @@ function App() {
                     path: '/special',
                     element: (
                         <ProtectedRoute>
-                            <Groups/>
+                            <SpecialFunctions/>
                         </ProtectedRoute>
                     )
                 },

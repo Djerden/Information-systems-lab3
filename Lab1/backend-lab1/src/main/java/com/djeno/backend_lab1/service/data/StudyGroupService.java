@@ -143,9 +143,9 @@ public class StudyGroupService {
     }
 
     // Найти группу с минимальным expelledStudents
-    public StudyGroup getStudyGroupWithMinExpelledStudents() {
-        return studyGroupRepository.findWithMinExpelledStudents()
-                .orElseThrow(() -> new RuntimeException("No StudyGroups found"));
+    public Optional<StudyGroup> getStudyGroupWithMinExpelledStudents() {
+        List<StudyGroup> groups = studyGroupRepository.findWithMinExpelledStudents();
+        return groups.isEmpty() ? Optional.empty() : Optional.of(groups.get(0));
     }
 
     // Посчитать группы с adminId больше указанного
@@ -163,8 +163,8 @@ public class StudyGroupService {
         StudyGroup studyGroup = getStudyGroupById(groupId);
         checkAccess(studyGroup);
 
-        studyGroup.setExpelledStudents((int) (studyGroup.getExpelledStudents() + studyGroup.getStudentsCount()));
-        studyGroup.setStudentsCount(0);
+        studyGroup.setExpelledStudents((int) (studyGroup.getExpelledStudents() + studyGroup.getStudentsCount() - 1));
+        studyGroup.setStudentsCount(1);
 
         studyGroupRepository.save(studyGroup);
     }

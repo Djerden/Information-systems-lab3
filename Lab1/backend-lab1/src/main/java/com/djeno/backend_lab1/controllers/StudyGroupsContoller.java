@@ -95,7 +95,10 @@ public class StudyGroupsContoller {
     // Вернуть один (любой) объект, значение поля expelledStudents которого является минимальным
     @GetMapping("/min-expelled-students")
     public ResponseEntity<StudyGroup> getGroupWithMinExpelledStudents() {
-        return ResponseEntity.ok(studyGroupService.getStudyGroupWithMinExpelledStudents());
+        // Извлекаем StudyGroup из Optional и выбрасываем исключение, если не найдено
+        StudyGroup studyGroup = studyGroupService.getStudyGroupWithMinExpelledStudents()
+                .orElseThrow(() -> new RuntimeException("No StudyGroups found"));
+        return ResponseEntity.ok(studyGroup);
     }
 
     // Вернуть количество объектов, значение поля groupAdmin которых больше заданного
@@ -105,14 +108,14 @@ public class StudyGroupsContoller {
     }
 
     // Вернуть массив объектов, значение поля name которых содержит заданную подстроку
-    @GetMapping("/search")
-    public ResponseEntity<List<StudyGroup>> searchGroupsByName(
-            @RequestParam String substring,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(studyGroupService.getStudyGroupsByNameSubstring(substring, pageable));
-    }
+//    @GetMapping("/search")
+//    public ResponseEntity<List<StudyGroup>> searchGroupsByName(
+//            @RequestParam String substring,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        return ResponseEntity.ok(studyGroupService.getStudyGroupsByNameSubstring(substring, pageable));
+//    }
 
     // Отчислить всех студентов указанной группы
     @PostMapping("/{id}/expel-students")

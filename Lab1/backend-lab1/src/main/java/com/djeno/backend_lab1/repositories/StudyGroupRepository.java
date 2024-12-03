@@ -28,7 +28,7 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long>, J
 
     // Найти группу с минимальным значением expelledStudents
     @Query("SELECT sg FROM StudyGroup sg WHERE sg.expelledStudents = (SELECT MIN(sg2.expelledStudents) FROM StudyGroup sg2)")
-    Optional<StudyGroup> findWithMinExpelledStudents();
+    List<StudyGroup> findWithMinExpelledStudents();
 
     // Подсчитать количество групп, у которых id groupAdmin больше указанного
     @Query("SELECT COUNT(sg) FROM StudyGroup sg WHERE sg.groupAdmin.id > :adminId")
