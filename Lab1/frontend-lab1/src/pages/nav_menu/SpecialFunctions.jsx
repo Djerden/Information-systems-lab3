@@ -103,7 +103,7 @@ export default function SpecialFunctions() {
 
     return (
         <div className="p-6 max-w-2xl mx-auto bg-white rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold mb-6">Special Functions</h2>
+            <h1 className="text-2xl font-bold mb-6">Special Functions</h1>
 
             <div className="mb-4">
                 <h2 className="text-xl font-medium text-gray-600 mb-2">Get a group with minimal expelledStudents:</h2>
@@ -127,7 +127,7 @@ export default function SpecialFunctions() {
 
             <div className="mb-4">
                 <h2 className="text-xl font-medium text-gray-600 mb-2">Get the number of groups whose adminId is greater than the specified one:</h2>
-                <label htmlFor="adminId" className="block text-sm font-medium mb-2">Admin ID</label>
+                <label htmlFor="adminId" className="block text-sm font-medium mb-2">Admin ID:</label>
                 <input
                     id="adminId"
                     type="number"
@@ -152,7 +152,7 @@ export default function SpecialFunctions() {
 
             <div className="mb-4">
                 <h2 className="text-xl font-medium text-gray-600 mb-2">Expel all students from a group:</h2>
-                <label htmlFor="groupId" className="block text-sm font-medium mb-2">Group ID</label>
+                <label htmlFor="groupId" className="block text-sm font-medium mb-2">Group ID:</label>
                 <input
                     id="groupId"
                     type="number"
@@ -171,7 +171,7 @@ export default function SpecialFunctions() {
 
             <div className="mb-4">
                 <h2 className="text-xl font-medium text-gray-600 mb-2">Add a student to a group:</h2>
-                <label htmlFor="groupIdAdd" className="block text-sm font-medium mb-2">Group ID</label>
+                <label htmlFor="groupIdAdd" className="block text-sm font-medium mb-2">Group ID:</label>
                 <input
                     id="groupIdAdd"
                     type="number"

@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
+import {FaUserCircle, FaUserShield} from "react-icons/fa";
 import { useState, useEffect } from "react";
 
 export default function Header() {
@@ -114,16 +114,19 @@ export default function Header() {
                     >
                         Special Functions
                     </NavLink>
-                    <NavLink
+
+                    {userRole === "ROLE_ADMIN" && (
+                        <NavLink
                         to="/admin"
                         className={({isActive}) =>
                             isActive
                                 ? "text-indigo-400 font-semibold"
                                 : "text-white hover:text-indigo-400"
                         }
-                    >
-                        Admin Panel
-                    </NavLink>
+                        >
+                            Admin Panel
+                        </NavLink>
+                    )}
                 </nav>
             </div>
 
@@ -137,10 +140,19 @@ export default function Header() {
                         >
                             {userName}
                         </span>
-                        <FaUserCircle
-                            className="text-3xl text-indigo-400 cursor-pointer hover:text-indigo-300 transition duration-200"
-                            onClick={() => setIsModalOpen(true)}
-                        />
+                        {/* Иконка для пользователей с ролью ROLE_USER */}
+                        {userRole === "ROLE_USER" ? (
+                            <FaUserCircle
+                                className="text-3xl text-indigo-400 cursor-pointer hover:text-indigo-300 transition duration-200"
+                                onClick={() => setIsModalOpen(true)}
+                            />
+                        ) : (
+                            // Иконка для пользователей с ролью ROLE_ADMIN
+                            <FaUserShield
+                                className="text-3xl text-indigo-400 cursor-pointer hover:text-indigo-300 transition duration-200"
+                                onClick={() => setIsModalOpen(true)}
+                            />
+                        )}
                         <button
                             onClick={handleLogout}
                             className="px-4 py-2 bg-red-500 text-white font-medium rounded hover:bg-red-600 transition duration-200"

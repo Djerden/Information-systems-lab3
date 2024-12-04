@@ -29,13 +29,13 @@ public class PersonService {
     // Создание Person
     public Person createPerson(Person person) {
         var currentUser = userService.getCurrentUser();
-        person.setUser(currentUser); // Устанавливаем владельца
+        person.setUser(currentUser);
 
         // Получаем объект Location по id
         if (person.getLocation() != null && person.getLocation().getId() != null) {
             Location location = locationRepository.findById(person.getLocation().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid location ID: " + person.getLocation().getId()));
-            person.setLocation(location); // Устанавливаем Location
+            person.setLocation(location);
         } else {
             person.setLocation(null); // Если locationId не передан
         }

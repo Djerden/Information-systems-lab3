@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
         Map<String, String> errorDetails = new HashMap<>();
         errorDetails.put("message", ex.getMessage());
         errorDetails.put("type", ex.getClass().getSimpleName());
-        ex.printStackTrace(); // для вывода полного стека ошибок в логи
+        ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails);
     }
 

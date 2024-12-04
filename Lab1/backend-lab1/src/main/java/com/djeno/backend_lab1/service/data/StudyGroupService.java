@@ -77,7 +77,7 @@ public class StudyGroupService {
         Coordinates coordinates = coordinatesRepository.findById(studyGroupDTO.getCoordinatesId())
                 .orElseThrow(() -> new RuntimeException("Coordinates not found"));
 
-        // Извлечение Admin по id из DTO (если указан)
+        // Извлечение Admin по id из DTO
         Person admin = null;
         if (studyGroupDTO.getGroupAdminId() != null) {
             System.out.println(studyGroupDTO.getGroupAdminId());
@@ -211,8 +211,7 @@ public class StudyGroupService {
     public static void fromDTO(StudyGroup studyGroup, StudyGroupDTO dto, Coordinates coordinates, Person admin, User user) {
 
         studyGroup.setName(dto.getName());
-        studyGroup.setCoordinates(coordinates); // Устанавливаем объект Coordinates
-        //studyGroup.setCreationDate(LocalDate.now()); // Автоматическая установка даты
+        studyGroup.setCoordinates(coordinates);
         studyGroup.setStudentsCount(dto.getStudentsCount());
         studyGroup.setExpelledStudents(dto.getExpelledStudents());
         studyGroup.setTransferredStudents(dto.getTransferredStudents());
@@ -229,8 +228,8 @@ public class StudyGroupService {
                 ? Semester.valueOf(dto.getSemesterEnum())
                 : null);
 
-        studyGroup.setGroupAdmin(admin); // Устанавливаем объект Admin (если есть)
-        studyGroup.setUser(user); // Устанавливаем текущего пользователя
+        studyGroup.setGroupAdmin(admin);
+        studyGroup.setUser(user);
     }
 
 

@@ -42,10 +42,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                // Своего рода отключение CORS (разрешение запросов со всех доменов)
+                // отключение CORS (разрешение запросов со всех доменов)
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new CorsConfiguration();
-                    //corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173"));
                     corsConfiguration.setAllowedOriginPatterns(List.of("*"));
                     corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     corsConfiguration.setAllowedHeaders(List.of("*"));
@@ -54,13 +53,14 @@ public class SecurityConfig {
                 }))
                 // Настройка доступа к конечным точкам
                 .authorizeHttpRequests(request -> request
-                        // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
+
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
 
-                        // Эндпоинт подачи заявки (требуется только аутентификация)
+                        // Эндпоинт подачи заявки на админа
                         .requestMatchers(HttpMethod.POST, "/admin/apply").authenticated()
+
                         // Эндпоинты для администраторов
                         .requestMatchers(HttpMethod.GET, "/admin").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/admin/{requestId}/approve").hasRole("ADMIN")

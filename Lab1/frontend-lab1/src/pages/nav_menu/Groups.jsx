@@ -165,7 +165,12 @@ export default function Groups() {
             });
 
             if (!response.ok) {
-                throw new Error(`Failed to delete group: ${response.statusText}`);
+                if (response.status === 403) {
+                    // Если статус 403 (Forbidden), показываем "Access Denied"
+                    alert("Access denied, you do not have the rights to delete this group");
+                } else {
+                    throw new Error(`Failed to delete group: ${response.statusText}`);
+                }
             }
         } catch (error) {
             console.error("Failed to delete group:", error);
@@ -266,9 +271,7 @@ export default function Groups() {
                     >
                         <option value="">All</option>
                         <option value="FIRST">First</option>
-                        <option value="SECOND">Second</option>
                         <option value="THIRD">Third</option>
-                        <option value="FOURTH">Fourth</option>
                         <option value="FIFTH">Fifth</option>
                         <option value="SIXTH">Sixth</option>
                         <option value="SEVENTH">Seventh</option>

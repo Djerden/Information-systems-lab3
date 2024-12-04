@@ -171,9 +171,18 @@ export default function AdminPanel() {
                 >
                     <option value="createdAt:desc">Newest First</option>
                     <option value="createdAt:asc">Oldest First</option>
-                    <option value="id:asc">ID Ascending</option>
-                    <option value="id:desc">ID Descending</option>
                 </select>
+                {/* Reset Button */}
+                <button
+                    onClick={() => {
+                        setStatusFilter(""); // сбросить фильтр статуса
+                        setSortBy("createdAt"); // сбросить сортировку по умолчанию
+                        setSortDirection("desc"); // сбросить сортировку по умолчанию
+                    }}
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                    Reset Filters
+                </button>
             </div>
 
             {/* Table of Requests */}
@@ -194,7 +203,7 @@ export default function AdminPanel() {
                             </thead>
                             <tbody>
                             {requests.map((request) => (
-                                <tr key={request.id}>
+                                <tr key={request.id} className="hover:bg-gray-100">
                                     <td className="border border-gray-300 px-4 py-2">{request.id}</td>
                                     <td className="border border-gray-300 px-4 py-2">{request.user.username}</td>
                                     <td className="border border-gray-300 px-4 py-2">{request.status}</td>

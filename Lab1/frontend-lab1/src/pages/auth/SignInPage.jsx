@@ -37,7 +37,10 @@ export default function SignInPage() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(user)
+            body: JSON.stringify({
+                username: user.username ? user.username.trim() : null, // Удаляем пробелы из username
+                password: user.password
+            })
         })
             .then(async (res) => {
                 const responseBody = await res.json();

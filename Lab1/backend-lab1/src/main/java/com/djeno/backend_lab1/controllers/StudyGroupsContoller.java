@@ -107,16 +107,6 @@ public class StudyGroupsContoller {
         return ResponseEntity.ok(studyGroupService.countStudyGroupsWithAdminGreaterThan(adminId));
     }
 
-    // Вернуть массив объектов, значение поля name которых содержит заданную подстроку
-//    @GetMapping("/search")
-//    public ResponseEntity<List<StudyGroup>> searchGroupsByName(
-//            @RequestParam String substring,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        return ResponseEntity.ok(studyGroupService.getStudyGroupsByNameSubstring(substring, pageable));
-//    }
-
     // Отчислить всех студентов указанной группы
     @PostMapping("/{id}/expel-students")
     public ResponseEntity<Void> expelAllStudents(@PathVariable Long id) {
