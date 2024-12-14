@@ -65,8 +65,11 @@ export default function SpecialFunctions() {
                     'Content-Type': 'application/json',
                 },
             });
+
             if (response.ok) {
                 setActionMessage(`Successfully expelled all students from group with ID: ${groupIdForExpel}`);
+            } else if (response.status === 404) {
+                setActionMessage(`Group with ID ${groupIdForExpel} not found.`);
             } else {
                 setActionMessage(`Failed to expel students. Please check the group ID.`);
             }
@@ -91,8 +94,11 @@ export default function SpecialFunctions() {
                     'Content-Type': 'application/json',
                 },
             });
+
             if (response.ok) {
                 setActionMessage(`Successfully added a student to group with ID: ${groupIdForAdd}`);
+            } else if (response.status === 404) {
+                setActionMessage(`Group with ID ${groupIdForAdd} not found.`);
             } else {
                 setActionMessage(`Failed to add student. Please check the group ID.`);
             }
@@ -100,6 +106,7 @@ export default function SpecialFunctions() {
             setActionMessage(`An error occurred: ${error.message}`);
         }
     };
+
 
     return (
         <div className="p-6 max-w-2xl mx-auto bg-white rounded-lg shadow-lg">

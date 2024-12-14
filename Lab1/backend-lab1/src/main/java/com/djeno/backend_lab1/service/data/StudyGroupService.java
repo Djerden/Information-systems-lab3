@@ -2,20 +2,18 @@ package com.djeno.backend_lab1.service.data;
 
 import com.djeno.backend_lab1.DTO.StudyGroupDTO;
 import com.djeno.backend_lab1.exceptions.AccessDeniedException;
+import com.djeno.backend_lab1.exceptions.StudyGroupNotFoundException;
 import com.djeno.backend_lab1.models.*;
 import com.djeno.backend_lab1.models.enums.FormOfEducation;
 import com.djeno.backend_lab1.models.enums.Role;
 import com.djeno.backend_lab1.models.enums.Semester;
 import com.djeno.backend_lab1.repositories.CoordinatesRepository;
-import com.djeno.backend_lab1.repositories.PersonRepository;
 import com.djeno.backend_lab1.repositories.StudyGroupHistoryRepository;
 import com.djeno.backend_lab1.repositories.StudyGroupRepository;
 import com.djeno.backend_lab1.service.StudyGroupSpecification;
 import com.djeno.backend_lab1.service.UserService;
 import com.djeno.backend_lab1.service.WebSocketNotificationService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -43,9 +41,8 @@ public class StudyGroupService {
 
     // Получение группы по ID с проверкой доступа
     public StudyGroup getStudyGroupById(Long id) {
-        StudyGroup studyGroup = studyGroupRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("StudyGroup not found"));
-        return studyGroup;
+        return studyGroupRepository.findById(id)
+                .orElseThrow(() -> new StudyGroupNotFoundException("Study group not found with id: " + id));
     }
 
     public Page<StudyGroup> getAllStudyGroups(Pageable pageable) {

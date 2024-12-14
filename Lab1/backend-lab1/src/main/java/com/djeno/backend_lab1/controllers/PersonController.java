@@ -4,15 +4,10 @@ import com.djeno.backend_lab1.DTO.PersonDTO;
 import com.djeno.backend_lab1.models.Person;
 import com.djeno.backend_lab1.service.data.PersonService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RestController

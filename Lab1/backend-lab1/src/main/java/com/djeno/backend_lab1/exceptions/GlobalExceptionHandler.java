@@ -86,4 +86,10 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
+
+    @ExceptionHandler(StudyGroupNotFoundException.class)
+    public ResponseEntity<String> handleStudyGroupNotFound(StudyGroupNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Error: " + ex.getMessage());
+    }
 }
