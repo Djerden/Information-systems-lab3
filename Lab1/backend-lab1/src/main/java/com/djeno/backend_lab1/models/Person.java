@@ -2,6 +2,7 @@ package com.djeno.backend_lab1.models;
 
 import com.djeno.backend_lab1.models.enums.Color;
 import com.djeno.backend_lab1.models.enums.Country;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -48,7 +49,7 @@ public class Person {
     private Country nationality; //Поле не может быть null
 
     // Владелец, создавший запись
-    @NotNull(message = "User cannot be null")
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

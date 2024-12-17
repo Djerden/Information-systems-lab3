@@ -1,8 +1,12 @@
 package com.djeno.backend_lab1.service.data;
 
 import com.djeno.backend_lab1.DTO.StudyGroupDTO;
+import com.djeno.backend_lab1.DTO.StudyGroupHistoryResponseDTO;
+import com.djeno.backend_lab1.DTO.StudyGroupResponseDTO;
 import com.djeno.backend_lab1.exceptions.AccessDeniedException;
+import com.djeno.backend_lab1.exceptions.EntityNotFoundException;
 import com.djeno.backend_lab1.exceptions.StudyGroupNotFoundException;
+import com.djeno.backend_lab1.mappers.DataMappers;
 import com.djeno.backend_lab1.models.*;
 import com.djeno.backend_lab1.models.enums.FormOfEducation;
 import com.djeno.backend_lab1.models.enums.Role;
@@ -23,7 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
+import java.util.stream.Collectors;
 
 
 @Service
@@ -39,17 +43,20 @@ public class StudyGroupService {
 
     private final WebSocketNotificationService notificationService;
 
-    // Получение группы по ID с проверкой доступа
-    public StudyGroup getStudyGroupById(Long id) {
-        return studyGroupRepository.findById(id)
+    // Получение группы по ID (для метода контроллера)
+    public StudyGroupResponseDTO getStudyGroupResponseDTOById(Long id) {
+        StudyGroup studyGroup =  studyGroupRepository.findById(id)
                 .orElseThrow(() -> new StudyGroupNotFoundException("Study group not found with id: " + id));
+        return DataMappers.toStudyGroupResponseDTO(studyGroup);
+    }
+    // Получение группы по ID
+    public StudyGroup getStudyGroupById(Long id) {
+        StudyGroup studyGroup =  studyGroupRepository.findById(id)
+                .orElseThrow(() -> new StudyGroupNotFoundException("Study group not found with id: " + id));
+        return studyGroup;
     }
 
-    public Page<StudyGroup> getAllStudyGroups(Pageable pageable) {
-        return studyGroupRepository.findAll(pageable);
-    }
-
-    public Page<StudyGroup> filterAndSortStudyGroups(
+    public Page<StudyGroupResponseDTO> filterAndSortStudyGroups(
             String name,
             FormOfEducation formOfEducation,
             Semester semesterEnum,
@@ -64,7 +71,8 @@ public class StudyGroupService {
                 .and(StudyGroupSpecification.createdOn(creationDate))
                 .and(StudyGroupSpecification.hasAdminName(adminName)); // Добавлено условие
 
-        return studyGroupRepository.findAll(spec, pageable);
+        return studyGroupRepository.findAll(spec, pageable)
+                .map(DataMappers::toStudyGroupResponseDTO);
     }
 
     public StudyGroup createStudyGroup(StudyGroupDTO studyGroupDTO) {
@@ -135,14 +143,20 @@ public class StudyGroupService {
         notificationService.sendNotification("study-groups", "deleted");
     }
     // Получение истории изменений группы по id
-    public List<StudyGroupHistory> getHistory(Long studyGroupId) {
-        return historyRepository.findByStudyGroupIdOrderByVersionDesc(studyGroupId);
+    public List<StudyGroupHistoryResponseDTO> getHistory(Long studyGroupId) {
+        return historyRepository.findByStudyGroupIdOrderByVersionDesc(studyGroupId)
+                .stream()
+                .map(DataMappers::toStudyGroupHistoryResponseDTO)
+                .collect(Collectors.toList());
     }
 
     // Найти группу с минимальным expelledStudents
-    public Optional<StudyGroup> getStudyGroupWithMinExpelledStudents() {
-        List<StudyGroup> groups = studyGroupRepository.findWithMinExpelledStudents();
-        return groups.isEmpty() ? Optional.empty() : Optional.of(groups.get(0));
+    public StudyGroupResponseDTO getStudyGroupWithMinExpelledStudents() {
+        return studyGroupRepository.findWithMinExpelledStudents()
+                .stream()
+                .findFirst()
+                .map(DataMappers::toStudyGroupResponseDTO)
+                .orElseThrow(() -> new EntityNotFoundException("No study groups found with expelled students"));
     }
 
     // Посчитать группы с adminId больше указанного

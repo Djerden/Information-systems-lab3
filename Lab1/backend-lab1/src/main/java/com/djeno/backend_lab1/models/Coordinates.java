@@ -1,5 +1,6 @@
 package com.djeno.backend_lab1.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -21,9 +22,8 @@ public class Coordinates {
     @Column(nullable = false)
     private double y;
 
-    // Владелец, создавший запись
-    @NotNull(message = "User cannot be null")
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user; // Связь с пользователем, который создал эту локацию
+    private User user;
 }

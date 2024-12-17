@@ -1,6 +1,8 @@
 package com.djeno.backend_lab1.controllers;
 
 import com.djeno.backend_lab1.DTO.StudyGroupDTO;
+import com.djeno.backend_lab1.DTO.StudyGroupHistoryResponseDTO;
+import com.djeno.backend_lab1.DTO.StudyGroupResponseDTO;
 import com.djeno.backend_lab1.models.StudyGroup;
 import com.djeno.backend_lab1.models.StudyGroupHistory;
 import com.djeno.backend_lab1.models.enums.FormOfEducation;
@@ -27,24 +29,15 @@ public class StudyGroupsContoller {
 
     // Создание новой группы
     @PostMapping
-    public ResponseEntity<StudyGroup> createStudyGroup(
+    public ResponseEntity<Void> createStudyGroup(
             @RequestBody StudyGroupDTO studyGroupDTO) {
-        StudyGroup createdGroup = studyGroupService.createStudyGroup(studyGroupDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdGroup);
+        studyGroupService.createStudyGroup(studyGroupDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    // Получение списка групп
-    @GetMapping
-    public ResponseEntity<Page<StudyGroup>> getAllStudyGroups(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(studyGroupService.getAllStudyGroups(pageable));
-    }
-
+    // Получение всех групп
     @GetMapping("/filter")
-    public ResponseEntity<Page<StudyGroup>> filterAndSortStudyGroups(
+    public ResponseEntity<Page<StudyGroupResponseDTO>> filterAndSortStudyGroups(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) FormOfEducation formOfEducation,
             @RequestParam(required = false) Semester semesterEnum,
@@ -58,7 +51,7 @@ public class StudyGroupsContoller {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<StudyGroup> studyGroups = studyGroupService.filterAndSortStudyGroups(
+        Page<StudyGroupResponseDTO> studyGroups = studyGroupService.filterAndSortStudyGroups(
                 name, formOfEducation, semesterEnum, creationDate, adminName, pageable);
 
         return ResponseEntity.ok(studyGroups);
@@ -66,16 +59,17 @@ public class StudyGroupsContoller {
 
     // Получение группы по id
     @GetMapping("/{id}")
-    public ResponseEntity<StudyGroup> getStudyGroupById(@PathVariable Long id) {
-        return ResponseEntity.ok(studyGroupService.getStudyGroupById(id));
+    public ResponseEntity<StudyGroupResponseDTO> getStudyGroupById(@PathVariable Long id) {
+        return ResponseEntity.ok(studyGroupService.getStudyGroupResponseDTOById(id));
     }
 
     // Изменение группы по id
     @PutMapping("/{id}")
-    public ResponseEntity<StudyGroup> updateStudyGroup(
+    public ResponseEntity<Void> updateStudyGroup(
             @PathVariable Long id,
             @RequestBody StudyGroupDTO studyGroupDTO) {
-        return ResponseEntity.ok(studyGroupService.updateStudyGroup(id, studyGroupDTO));
+        studyGroupService.updateStudyGroup(id, studyGroupDTO);
+        return ResponseEntity.ok().build();
     }
 
     // Удаление группы по id
@@ -87,16 +81,14 @@ public class StudyGroupsContoller {
 
     // Получение истории группы по id
     @GetMapping("/{id}/history")
-    public ResponseEntity<List<StudyGroupHistory>> getStudyGroupHistory(@PathVariable Long id) {
+    public ResponseEntity<List<StudyGroupHistoryResponseDTO>> getStudyGroupHistory(@PathVariable Long id) {
         return ResponseEntity.ok(studyGroupService.getHistory(id));
     }
 
     // Вернуть один (любой) объект, значение поля expelledStudents которого является минимальным
     @GetMapping("/min-expelled-students")
-    public ResponseEntity<StudyGroup> getGroupWithMinExpelledStudents() {
-        // Извлекаем StudyGroup из Optional и выбрасываем исключение, если не найдено
-        StudyGroup studyGroup = studyGroupService.getStudyGroupWithMinExpelledStudents()
-                .orElseThrow(() -> new RuntimeException("No StudyGroups found"));
+    public ResponseEntity<StudyGroupResponseDTO> getGroupWithMinExpelledStudents() {
+        StudyGroupResponseDTO studyGroup = studyGroupService.getStudyGroupWithMinExpelledStudents();
         return ResponseEntity.ok(studyGroup);
     }
 

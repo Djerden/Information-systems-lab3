@@ -1,5 +1,7 @@
 package com.djeno.backend_lab1.service;
 
+import com.djeno.backend_lab1.DTO.AdminRequestResponseDTO;
+import com.djeno.backend_lab1.mappers.DataMappers;
 import com.djeno.backend_lab1.models.AdminRequest;
 import com.djeno.backend_lab1.models.enums.AdminRequestStatus;
 import com.djeno.backend_lab1.models.enums.Role;
@@ -21,13 +23,15 @@ public class AdminRequestService {
 
 
     // Получить все заявки с пагинацией и сортировкой
-    public Page<AdminRequest> getAllRequests(Pageable pageable) {
-        return adminRequestRepository.findAll(pageable);
+    public Page<AdminRequestResponseDTO> getAllRequests(Pageable pageable) {
+        return adminRequestRepository.findAll(pageable)
+                .map(DataMappers::toAdminRequestResponseDTO);
     }
 
     // Получить заявки по статусу с пагинацией и сортировкой
-    public Page<AdminRequest> getRequestsByStatus(AdminRequestStatus status, Pageable pageable) {
-        return adminRequestRepository.findByStatus(status, pageable);
+    public Page<AdminRequestResponseDTO> getRequestsByStatus(AdminRequestStatus status, Pageable pageable) {
+        return adminRequestRepository.findByStatus(status, pageable)
+                .map(DataMappers::toAdminRequestResponseDTO);
     }
 
     // Создание заявки

@@ -1,5 +1,6 @@
 package com.djeno.backend_lab1.controllers;
 
+import com.djeno.backend_lab1.DTO.AdminRequestResponseDTO;
 import com.djeno.backend_lab1.models.AdminRequest;
 import com.djeno.backend_lab1.models.enums.AdminRequestStatus;
 import com.djeno.backend_lab1.service.AdminRequestService;
@@ -28,7 +29,7 @@ public class AdminRequestController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<AdminRequest>> getAllRequests(
+    public ResponseEntity<Page<AdminRequestResponseDTO>> getAllRequests(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -42,7 +43,7 @@ public class AdminRequestController {
     // Получить заявки по статусу с пагинацией и сортировкой
     @GetMapping("/filter")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<AdminRequest>> getRequestsByStatus(
+    public ResponseEntity<Page<AdminRequestResponseDTO>> getRequestsByStatus(
             @RequestParam AdminRequestStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,

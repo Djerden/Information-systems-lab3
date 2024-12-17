@@ -1,5 +1,6 @@
 package com.djeno.backend_lab1.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -26,8 +27,7 @@ public class Location {
     @Column(name = "name")
     private String name; //Поле может быть null
 
-    // Владелец, создавший запись
-    @NotNull(message = "User cannot be null")
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
