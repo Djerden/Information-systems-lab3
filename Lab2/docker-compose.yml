@@ -2,7 +2,7 @@ services:
   # Сервис для фронтенда (React с Vite)
   frontend:
     build:
-      context: ./frontend-lab1  # Путь к папке с исходниками фронтенда
+      context: ./frontend-lab2  # Путь к папке с исходниками фронтенда
       dockerfile: Dockerfile  # Указание на Dockerfile для фронтенда
     ports:
       - "5173:80"  # Прокси порт для доступа к фронтенду через HTTP
@@ -14,7 +14,7 @@ services:
   # Сервис для бэкенда (Spring Boot)
   backend:
     build:
-      context: ./backend-lab1  # Путь к папке с исходниками бэкенда
+      context: backend-lab2  # Путь к папке с исходниками бэкенда
       dockerfile: Dockerfile  # Указание на Dockerfile для бэкенда
     ports:
       - "8080:8080"  # Прокси порт для доступа к бэкенду
