@@ -31,7 +31,10 @@ export default function SignInPage() {
     function handleLogin(e) {
         e.preventDefault();
         setError(null); // Сброс ошибки перед запросом
-
+        console.log(JSON.stringify({
+            username: user.username ? user.username.trim() : null, // Удаляем пробелы из username
+            password: user.password
+        }))
         fetch('http://localhost:8080/auth/sign-in', {
             method: 'POST',
             headers: {
@@ -45,6 +48,7 @@ export default function SignInPage() {
             .then(async (res) => {
                 const responseBody = await res.json();
                 if (!res.ok) {
+                    console.log(res)
                     throw new Error(responseBody.message || 'Ошибка авторизации');
                 }
 
@@ -54,12 +58,14 @@ export default function SignInPage() {
                 if (!jwtToken) {
                     throw new Error('Токен не получен');
                 }
-
+                console.log(error)
                 sessionStorage.setItem('jwt', jwtToken); // Сохраняем токен в sessionStorage
 
                 toMainPage(); // Переход на главную страницу
             })
-            .catch(err => setError(err.message)); // Отображаем сообщение об ошибке
+            .catch(err => {setError(err.message)
+                console.log(err)
+            }); // Отображаем сообщение об ошибке
     }
 
 

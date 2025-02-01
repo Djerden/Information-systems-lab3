@@ -5,7 +5,8 @@ import CoordinatesModal from "../../components/modal_windows/CoordinatesModal.js
 import LocationModal from "../../components/modal_windows/LocationModal.jsx";
 import GroupHistoryModal from "../../components/modal_windows/GroupHistoryModal.jsx";
 
-import { Client } from "@stomp/stompjs";  // импортируем клиента для WebSocket
+import { Client } from "@stomp/stompjs";
+import ImportFileModal from "../../components/modal_windows/ImportFileModal.jsx";  // импортируем клиента для WebSocket
 
 
 export default function Groups() {
@@ -19,6 +20,7 @@ export default function Groups() {
     const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
     const [isCoordinatesModalOpen, setIsCoordinatesModalOpen] = useState(false);
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
     const [totalPages, setTotalPages] = useState(0);
     const [currentPage, setCurrentPage] = useState(0);
@@ -212,6 +214,12 @@ export default function Groups() {
                     >
                         Create New Location
                     </button>
+                    {/*<button*/}
+                    {/*    className="px-4 py-2 bg-orange-500 text-white font-medium rounded hover:bg-orange-600 transition duration-200"*/}
+                    {/*    onClick={() => {setIsImportModalOpen(true)}}*/}
+                    {/*>*/}
+                    {/*    Import File*/}
+                    {/*</button>*/}
                 </div>
             </div>
 
@@ -425,6 +433,10 @@ export default function Groups() {
             <LocationModal
                 isOpen={isLocationModalOpen}
                 onRequestClose={() => setIsLocationModalOpen(false)}
+            />
+            <ImportFileModal
+                isOpen={isImportModalOpen}
+                onRequestClose={() => setIsImportModalOpen(false)}
             />
 
             <GroupHistoryModal

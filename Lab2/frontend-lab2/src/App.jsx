@@ -7,6 +7,7 @@ import SignInPage from "./pages/auth/SignInPage.jsx";
 import SignUpPage from "./pages/auth/SignUpPage.jsx";
 import ProtectedRoute from "./components/security/ProtectedRoute.jsx";
 import SpecialFunctions from "./pages/nav_menu/SpecialFunctions.jsx";
+import ImportHistory from "./pages/nav_menu/ImportHistory.jsx";
 
 function App() {
 
@@ -33,6 +34,14 @@ function App() {
                     element: (
                         <ProtectedRoute>
                             <SpecialFunctions/>
+                        </ProtectedRoute>
+                    )
+                },
+                {
+                    path: '/imports',
+                    element: (
+                        <ProtectedRoute>
+                            <ImportHistory/>
                         </ProtectedRoute>
                     )
                 },

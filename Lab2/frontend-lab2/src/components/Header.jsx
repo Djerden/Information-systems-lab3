@@ -114,6 +114,16 @@ export default function Header() {
                     >
                         Special Functions
                     </NavLink>
+                    <NavLink
+                        to="/imports"
+                        className={({isActive}) =>
+                            isActive
+                                ? "text-indigo-400 font-semibold"
+                                : "text-white hover:text-indigo-400"
+                        }
+                    >
+                        Imports History
+                    </NavLink>
 
                     {userRole === "ROLE_ADMIN" && (
                         <NavLink
