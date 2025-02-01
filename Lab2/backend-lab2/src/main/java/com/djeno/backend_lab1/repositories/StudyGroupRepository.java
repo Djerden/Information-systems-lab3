@@ -34,4 +34,6 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long>, J
     @Query("SELECT COUNT(sg) FROM StudyGroup sg WHERE sg.groupAdmin.id > :adminId")
     long countByGroupAdminGreaterThan(@Param("adminId") Long adminId);
 
+    boolean existsByName(String name);
+
 }

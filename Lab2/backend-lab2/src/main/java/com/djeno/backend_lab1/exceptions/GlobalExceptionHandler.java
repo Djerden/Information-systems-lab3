@@ -18,6 +18,16 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(LocationNameAlreadyExistsException.class)
+    public ResponseEntity<String> handleLocationNameAlreadyExists(LocationNameAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(StudyGroupNameAlreadyExistsException.class)
+    public ResponseEntity<String> handleStudyGroupNameAlreadyExistsException(StudyGroupNameAlreadyExistsException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(InvalidSignRequestException.class)
     public ResponseEntity<ErrorResponse> handleInvalidSignUpRequest(InvalidSignRequestException ex) {
         ErrorResponse errorResponse = new ErrorResponse(

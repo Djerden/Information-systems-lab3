@@ -1,5 +1,6 @@
 package com.djeno.backend_lab1.service.data;
 
+import com.djeno.backend_lab1.exceptions.LocationNameAlreadyExistsException;
 import com.djeno.backend_lab1.models.Location;
 import com.djeno.backend_lab1.models.enums.Role;
 import com.djeno.backend_lab1.repositories.LocationRepository;
@@ -18,6 +19,7 @@ public class LocationService {
 
     // Создание Location
     public Location createLocation(Location location) {
+        validateUniqueLocationName(location.getName()); // проверка уникальности имени
         var currentUser = userService.getCurrentUser();
         location.setUser(currentUser); // Устанавливаем владельца
         return locationRepository.save(location);
@@ -39,9 +41,17 @@ public class LocationService {
         Location existingLocation = getLocationById(id);
         checkAccess(existingLocation);
 
+        // Проверяем, изменилось ли имя, и если да, то выполняем проверку на уникальность
+        if (updatedLocation.getName() != null && !updatedLocation.getName().equals(existingLocation.getName())) {
+            validateUniqueLocationName(updatedLocation.getName()); // Проверка уникальности имени
+        }
+
         existingLocation.setX(updatedLocation.getX());
         existingLocation.setY(updatedLocation.getY());
-        existingLocation.setName(updatedLocation.getName());
+        // Обновление имени, если оно изменилось
+        if (updatedLocation.getName() != null && !updatedLocation.getName().equals(existingLocation.getName())) {
+            existingLocation.setName(updatedLocation.getName());
+        }
 
         return locationRepository.save(existingLocation);
     }
@@ -58,6 +68,12 @@ public class LocationService {
         var currentUser = userService.getCurrentUser();
         if (!location.getUser().equals(currentUser) && !currentUser.getRole().equals(Role.ROLE_ADMIN)) {
             throw new RuntimeException("Access denied");
+        }
+    }
+
+    public void validateUniqueLocationName(String name) {
+        if (locationRepository.existsByName(name)) {
+            throw new LocationNameAlreadyExistsException(name);
         }
     }
 }

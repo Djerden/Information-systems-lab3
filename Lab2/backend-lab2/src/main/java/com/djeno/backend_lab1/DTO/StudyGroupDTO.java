@@ -17,4 +17,20 @@ public class StudyGroupDTO {
     private long shouldBeExpelled;
     private String semesterEnum;
     private Long groupAdminId;
+
+    @Override
+    public String toString() {
+        return "StudyGroupDTO{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", coordinatesId=" + coordinatesId +
+                ", studentsCount=" + studentsCount +
+                ", expelledStudents=" + expelledStudents +
+                ", transferredStudents=" + transferredStudents +
+                ", formOfEducation='" + formOfEducation + '\'' +
+                ", shouldBeExpelled=" + shouldBeExpelled +
+                ", semesterEnum='" + semesterEnum + '\'' +
+                ", groupAdminId=" + groupAdminId +
+                '}';
+    }
 }

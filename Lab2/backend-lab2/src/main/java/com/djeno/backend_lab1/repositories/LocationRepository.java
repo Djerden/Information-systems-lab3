@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface LocationRepository extends JpaRepository<Location, Long> {
     boolean existsByIdAndUserId(Long id, Long userId);
+
+    boolean existsByName(String name);
 }

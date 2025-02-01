@@ -53,4 +53,18 @@ public class Person {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", eyeColor=" + eyeColor +
+                ", hairColor=" + hairColor +
+                ", location=" + (location != null ? location.getId() : null) +
+                ", weight=" + weight +
+                ", nationality=" + nationality +
+                ", user=" + (user != null ? user.getId() : null) +
+                '}';
+    }
 }

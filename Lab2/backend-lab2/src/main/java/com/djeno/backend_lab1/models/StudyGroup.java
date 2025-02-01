@@ -67,4 +67,22 @@ public class StudyGroup {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Override
+    public String toString() {
+        return "StudyGroup{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", coordinates=" + (coordinates != null ? coordinates.getId() : null) +
+                ", creationDate=" + creationDate +
+                ", studentsCount=" + studentsCount +
+                ", expelledStudents=" + expelledStudents +
+                ", transferredStudents=" + transferredStudents +
+                ", formOfEducation=" + formOfEducation +
+                ", shouldBeExpelled=" + shouldBeExpelled +
+                ", semesterEnum=" + semesterEnum +
+                ", groupAdmin=" + (groupAdmin != null ? groupAdmin.getId() : null) +
+                ", user=" + (user != null ? user.getId() : null) +
+                '}';
+    }
 }

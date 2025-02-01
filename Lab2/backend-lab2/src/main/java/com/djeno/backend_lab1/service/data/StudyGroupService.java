@@ -5,6 +5,7 @@ import com.djeno.backend_lab1.DTO.StudyGroupHistoryResponseDTO;
 import com.djeno.backend_lab1.DTO.StudyGroupResponseDTO;
 import com.djeno.backend_lab1.exceptions.AccessDeniedException;
 import com.djeno.backend_lab1.exceptions.EntityNotFoundException;
+import com.djeno.backend_lab1.exceptions.StudyGroupNameAlreadyExistsException;
 import com.djeno.backend_lab1.exceptions.StudyGroupNotFoundException;
 import com.djeno.backend_lab1.mappers.DataMappers;
 import com.djeno.backend_lab1.models.*;
@@ -78,6 +79,9 @@ public class StudyGroupService {
     public StudyGroup createStudyGroup(StudyGroupDTO studyGroupDTO) {
         var currentUser = userService.getCurrentUser();
 
+        // Проверка уникальности имени
+        validateUniqueStudyGroupName(studyGroupDTO.getName());
+
         // Извлечение Coordinates по id из DTO
         Coordinates coordinates = coordinatesRepository.findById(studyGroupDTO.getCoordinatesId())
                 .orElseThrow(() -> new RuntimeException("Coordinates not found"));
@@ -94,6 +98,9 @@ public class StudyGroupService {
         studyGroup.setCreationDate(LocalDate.now()); // Устанавливаем дату создания
         fromDTO(studyGroup, studyGroupDTO, coordinates, admin, currentUser);
 
+        // Валидация количества студентов
+        validateStudentsCount(studyGroup);
+
         // Отправка уведомления о создании новой группы
         notificationService.sendNotification("study-groups", "created");
 
@@ -106,6 +113,11 @@ public class StudyGroupService {
         StudyGroup existingStudyGroup = getStudyGroupById(id);
 
         checkAccess(existingStudyGroup);
+
+        // Проверка, изменилось ли имя, и если да — проверка уникальности
+        if (!studyGroupDTO.getName().equals(existingStudyGroup.getName())) {
+            validateUniqueStudyGroupName(studyGroupDTO.getName());
+        }
 
         // Извлечение Coordinates по id из DTO
         Coordinates coordinates = coordinatesRepository.findById(studyGroupDTO.getCoordinatesId())
@@ -121,6 +133,9 @@ public class StudyGroupService {
         saveHistory(existingStudyGroup);
 
         fromDTO(existingStudyGroup, studyGroupDTO, coordinates, admin, existingStudyGroup.getUser());
+
+        // Валидация количества студентов
+        validateStudentsCount(existingStudyGroup);
 
         // Отправка уведомления об обновлении группы
         notificationService.sendNotification("study-groups", "updated");
@@ -249,6 +264,22 @@ public class StudyGroupService {
         var currentUser = userService.getCurrentUser();
         if (!studyGroup.getUser().equals(currentUser) && !currentUser.getRole().equals(Role.ROLE_ADMIN)) {
             throw new AccessDeniedException("Access denied");
+        }
+    }
+
+    public void validateUniqueStudyGroupName(String name) {
+        if (studyGroupRepository.existsByName(name)) {
+            throw new StudyGroupNameAlreadyExistsException("Study group name already exists: " + name);
+        }
+    }
+
+    // Метод для валидации количества студентов в зависимости от формы образования
+    private void validateStudentsCount(StudyGroup studyGroup) {
+        if (studyGroup.getFormOfEducation() == FormOfEducation.FULL_TIME_EDUCATION && studyGroup.getStudentsCount() > 40) {
+            throw new IllegalArgumentException("For full-time education, the number of students cannot exceed 40.");
+        }
+        if (studyGroup.getFormOfEducation() == FormOfEducation.EVENING_CLASSES && studyGroup.getStudentsCount() > 50) {
+            throw new IllegalArgumentException("For evening classes, the number of students cannot exceed 50.");
         }
     }
 

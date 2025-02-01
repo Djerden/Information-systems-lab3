@@ -26,4 +26,14 @@ public class Coordinates {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Override
+    public String toString() {
+        return "Coordinates{" +
+                "id=" + id +
+                ", x=" + x +
+                ", y=" + y +
+                ", user=" + (user != null ? user.getId() : null) +
+                '}';
+    }
 }

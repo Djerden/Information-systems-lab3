@@ -66,6 +66,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/admin/{requestId}/approve").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/admin/{requestId}/reject").hasRole("ADMIN")
 
+//                        // Импорт файла
+//                        .requestMatchers(HttpMethod.GET, "/import/history/admin").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/import/history/user").authenticated()
+//                        .requestMatchers(HttpMethod.POST, "/import/yaml").authenticated()
+
                         // Эндпоинты для работы с данными
                         .requestMatchers(HttpMethod.GET, "/study-groups/**","/persons/**", "/locations/**", "/coordinates/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/study-groups/**", "/persons/**", "/locations/**", "/coordinates/**").authenticated()

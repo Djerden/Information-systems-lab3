@@ -31,4 +31,15 @@ public class Location {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Override
+    public String toString() {
+        return "Location{" +
+                "id=" + id +
+                ", x=" + x +
+                ", y=" + y +
+                ", name='" + name + '\'' +
+                ", user=" + (user != null ? user.getId() : null) +
+                '}';
+    }
 }
