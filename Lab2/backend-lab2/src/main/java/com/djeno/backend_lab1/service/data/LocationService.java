@@ -7,6 +7,8 @@ import com.djeno.backend_lab1.repositories.LocationRepository;
 import com.djeno.backend_lab1.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,7 +19,16 @@ public class LocationService {
     private final LocationRepository locationRepository;
     private final UserService userService;
 
+    public List<Location> saveAll(List<Location> locationList) {
+        return locationRepository.saveAll(locationList);
+    }
+
+    public boolean existsByName(String name) {
+        return locationRepository.existsByName(name);
+    }
+
     // Создание Location
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Location createLocation(Location location) {
         validateUniqueLocationName(location.getName()); // проверка уникальности имени
         var currentUser = userService.getCurrentUser();
@@ -37,6 +48,7 @@ public class LocationService {
     }
 
     // Обновление Location
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Location updateLocation(Long id, Location updatedLocation) {
         Location existingLocation = getLocationById(id);
         checkAccess(existingLocation);
@@ -57,6 +69,7 @@ public class LocationService {
     }
 
     // Удаление Location
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void deleteLocation(Long id) {
         Location location = getLocationById(id);
         checkAccess(location);

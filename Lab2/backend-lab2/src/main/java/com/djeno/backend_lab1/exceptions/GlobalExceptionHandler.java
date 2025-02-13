@@ -1,6 +1,7 @@
 package com.djeno.backend_lab1.exceptions;
 
 import com.djeno.backend_lab1.DTO.ErrorResponse;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,6 +18,32 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(CannotAcquireLockException.class)
+    public ResponseEntity<Void> handleCannotAcquireLockException() {
+        // Возвращаем HTTP-статус 409 Conflict без тела ответа
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @ExceptionHandler(StudyGroupAlreadyExistsException.class)
+    public ResponseEntity<String> handleStudyGroupAlreadyExistsException(StudyGroupAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(LocationAlreadyExistsException.class)
+    public ResponseEntity<String> handleLocationAlreadyExistsException(LocationAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CoordinatesAlreadyExistsException.class)
+    public ResponseEntity<String> handleCoordinatesAlreadyExistsException(CoordinatesAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<String> handleTooManyRequestsException(TooManyRequestsException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ex.getMessage());
+    }
 
     @ExceptionHandler(LocationNameAlreadyExistsException.class)
     public ResponseEntity<String> handleLocationNameAlreadyExists(LocationNameAlreadyExistsException ex) {

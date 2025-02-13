@@ -23,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,6 +45,15 @@ public class StudyGroupService {
     private final UserService userService;
 
     private final WebSocketNotificationService notificationService;
+
+    public List<StudyGroup> saveAll(List<StudyGroup> studyGroupList) {
+        return studyGroupRepository.saveAll(studyGroupList);
+    }
+
+
+    public boolean existsByName(String name) {
+        return studyGroupRepository.existsByName(name);
+    }
 
     // Получение группы по ID (для метода контроллера)
     public StudyGroupResponseDTO getStudyGroupResponseDTOById(Long id) {
@@ -76,6 +87,7 @@ public class StudyGroupService {
                 .map(DataMappers::toStudyGroupResponseDTO);
     }
 
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public StudyGroup createStudyGroup(StudyGroupDTO studyGroupDTO) {
         var currentUser = userService.getCurrentUser();
 
@@ -109,6 +121,7 @@ public class StudyGroupService {
     }
 
     // Обновление группы
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public StudyGroup updateStudyGroup(Long id, StudyGroupDTO studyGroupDTO) {
         StudyGroup existingStudyGroup = getStudyGroupById(id);
 
@@ -144,6 +157,7 @@ public class StudyGroupService {
     }
 
     // Удаление группы
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void deleteStudyGroup(Long id) {
         StudyGroup studyGroup = getStudyGroupById(id);
 

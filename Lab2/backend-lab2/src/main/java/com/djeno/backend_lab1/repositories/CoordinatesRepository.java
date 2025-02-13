@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface CoordinatesRepository extends JpaRepository<Coordinates, Long> {
     boolean existsByIdAndUserId(Long id, Long userId);
+
+    boolean existsByXAndY(float x, double y);
 }
 

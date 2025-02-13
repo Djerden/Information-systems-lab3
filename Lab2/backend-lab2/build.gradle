@@ -40,6 +40,12 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+//	// SLF4J API
+//	implementation 'org.slf4j:slf4j-api:2.0.16'
+//
+//	// Logback (реализация SLF4J)
+//	implementation 'ch.qos.logback:logback-classic:1.5.16'
 }
 
 tasks.named('test') {

@@ -28,7 +28,7 @@ public class ImportHistoryService {
 
     private final WebSocketNotificationService webSocketNotificationService;
 
-
+    // Сохранится в любом случае, даже если транзакция по записи данных откатится
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ImportHistory saveImportHistory(ImportHistory importHistory) {
         webSocketNotificationService.sendNotification("import-history", "saved");

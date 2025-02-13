@@ -11,6 +11,8 @@ import com.djeno.backend_lab1.repositories.PersonRepository;
 import com.djeno.backend_lab1.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +23,10 @@ public class PersonService {
     private final PersonRepository personRepository;
     private final LocationRepository locationRepository;
     private final UserService userService;
+
+    public List<Person> saveAll(List<Person> personList) {
+        return personRepository.saveAll(personList);
+    }
 
     // Создание Person
     public Person createPerson(Person person) {

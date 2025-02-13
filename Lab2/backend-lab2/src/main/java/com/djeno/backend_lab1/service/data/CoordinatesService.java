@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +22,17 @@ public class CoordinatesService {
     private final CoordinatesRepository coordinatesRepository;
     private final UserService userService;
 
+
+    public boolean existsByXAndY(float x, double y) {
+        return coordinatesRepository.existsByXAndY(x, y);
+    }
+
+    public List<Coordinates> saveAll(List<Coordinates> coordinatesList) {
+        return coordinatesRepository.saveAll(coordinatesList);
+    }
+
     // Создание Coordinates
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Coordinates createCoordinates(Coordinates coordinates) {
         var currentUser = userService.getCurrentUser();
         coordinates.setUser(currentUser); // Устанавливаем владельца
@@ -39,6 +51,7 @@ public class CoordinatesService {
     }
 
     // Обновление Coordinates
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Coordinates updateCoordinates(Long id, Coordinates updatedCoordinates) {
         Coordinates existingCoordinates = getCoordinatesById(id);
         checkAccess(existingCoordinates);
@@ -50,6 +63,7 @@ public class CoordinatesService {
     }
 
     // Удаление Coordinates
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void deleteCoordinates(Long id) {
         Coordinates coordinates = getCoordinatesById(id);
         checkAccess(coordinates);
