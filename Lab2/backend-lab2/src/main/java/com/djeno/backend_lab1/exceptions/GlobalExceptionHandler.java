@@ -25,18 +25,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
-    @ExceptionHandler(StudyGroupAlreadyExistsException.class)
+    @ExceptionHandler(DublicateFileException.class)
     public ResponseEntity<String> handleStudyGroupAlreadyExistsException(StudyGroupAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(LocationAlreadyExistsException.class)
-    public ResponseEntity<String> handleLocationAlreadyExistsException(LocationAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(CoordinatesAlreadyExistsException.class)
-    public ResponseEntity<String> handleCoordinatesAlreadyExistsException(CoordinatesAlreadyExistsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 

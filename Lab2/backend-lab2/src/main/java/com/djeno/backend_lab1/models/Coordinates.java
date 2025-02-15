@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "coordinates")
+@Table(name = "coordinates", indexes = @Index(name = "idx_x_y", columnList = "x, y"))
 public class Coordinates {
 
     @Id

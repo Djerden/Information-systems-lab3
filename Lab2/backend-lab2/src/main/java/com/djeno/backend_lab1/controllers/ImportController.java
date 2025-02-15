@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Isolation;
@@ -32,31 +33,34 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Semaphore;
 
 @RestController
 @RequestMapping("import")
 @RequiredArgsConstructor
 public class ImportController {
 
-    private final CoordinatesService coordinatesService;
-    private final LocationService locationService;
-    private final PersonService personService;
-    private final StudyGroupService studyGroupService;
     private final UserService userService;
     private final ImportHistoryService importHistoryService;
-    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     private final ImportService importService;
     private final UserRequestLimiter userRequestLimiter;
 
+    private final Semaphore semaphore = new Semaphore(20); // Максимум запросов с файлами до 6мб
+
     @PostMapping(value = "/yaml", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    public ResponseEntity<?> importYaml(@RequestParam("file") MultipartFile file) throws IOException {
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    public ResponseEntity<?> importYaml(@RequestParam("file") MultipartFile file) throws IOException, ExecutionException, InterruptedException {
+
+        if (!semaphore.tryAcquire()) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Too many concurrent requests. Please try again later.");
+        }
 
         User currentUser = userService.getCurrentUser();
         Long userId = currentUser.getId();
 
         try {
-            // Пытаемся получить разрешение на выполнение запроса
             userRequestLimiter.acquirePermission(userId);
 
             ImportHistory importHistory = ImportHistory.builder()
@@ -65,28 +69,40 @@ public class ImportController {
                     .timestamp(LocalDateTime.now())
                     .addedObjects(0)
                     .build();
+            importHistory = importHistoryService.saveImportHistory(importHistory);
 
-            try {
-                importHistory = importHistoryService.saveImportHistory(importHistory); // Сохраняем историю с начальным статусом
+            // Асинхронное выполнение импорта данных
+            CompletableFuture<Integer> addedObjects = importService.importYamlData(file.getInputStream(), currentUser);
 
-                int addedObjects = importService.importYamlData(file.getInputStream(), currentUser);
+            // Обрабатываем завершение асинхронной операции
+            ImportHistory finalImportHistory = importHistory;
+            addedObjects.whenComplete((result, exception) -> {
+                try {
+                    if (exception == null) {
+                        finalImportHistory.setStatus(ImportStatus.SUCCESS);
+                        finalImportHistory.setAddedObjects(result);
+                    } else {
+                        finalImportHistory.setStatus(ImportStatus.FAILED);
+                    }
+                    importHistoryService.saveImportHistory(finalImportHistory); // Сохраняем результат
+                } finally {
+                    // Освобождаем разрешение пользователя после завершения
+                    userRequestLimiter.releasePermission(userId);
+                    // Освобождаем разрешение для запроса
+                    semaphore.release();
+                }
+            });
 
-                importHistory.setStatus(ImportStatus.SUCCESS);
-                importHistory.setAddedObjects(addedObjects);
-                importHistoryService.saveImportHistory(importHistory);
+            return ResponseEntity.ok("Data is being processed. You will be see in history");
 
-                return ResponseEntity.ok("Data imported successfully");
-            } catch (Exception e) {
-                importHistory.setStatus(ImportStatus.FAILED); // Если ошибка, статус будет FAILED
-                importHistoryService.saveImportHistory(importHistory); // Сохраняем историю с ошибкой
-                throw e;
-            } finally {
-                // Освобождаем разрешение после завершения запроса
-                userRequestLimiter.releasePermission(userId);
-            }
         } catch (TooManyRequestsException e) {
             // Если пользователь превысил лимит запросов
+            semaphore.release(); // Освобождаем семафор в случае исключения
             throw e;
+        } catch (Exception e) {
+            semaphore.release();
+            userRequestLimiter.releasePermission(userId); // Освобождаем разрешение пользователя
+            throw e; // Пробрасываем исключение дальше
         }
     }
 

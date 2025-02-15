@@ -2,9 +2,7 @@ package com.djeno.backend_lab1.service;
 
 import com.djeno.backend_lab1.DTO.PersonDTO;
 import com.djeno.backend_lab1.DTO.StudyGroupDTO;
-import com.djeno.backend_lab1.exceptions.CoordinatesAlreadyExistsException;
-import com.djeno.backend_lab1.exceptions.LocationAlreadyExistsException;
-import com.djeno.backend_lab1.exceptions.StudyGroupAlreadyExistsException;
+import com.djeno.backend_lab1.exceptions.DublicateFileException;
 import com.djeno.backend_lab1.models.*;
 import com.djeno.backend_lab1.models.enums.Color;
 import com.djeno.backend_lab1.models.enums.Country;
@@ -16,24 +14,22 @@ import com.djeno.backend_lab1.service.data.PersonService;
 import com.djeno.backend_lab1.service.data.StudyGroupService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class ImportService {
 
     private final CoordinatesService coordinatesService;
@@ -42,7 +38,8 @@ public class ImportService {
     private final StudyGroupService studyGroupService;
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
-    public int importYamlData(InputStream inputStream, User user) {
+    @Async("taskExecutor")
+    public CompletableFuture<Integer> importYamlData(InputStream inputStream, User user) {
         List<Coordinates> coordinatesList = new ArrayList<>();
         List<Location> locationList = new ArrayList<>();
         List<Person> personList = new ArrayList<>();
@@ -66,7 +63,7 @@ public class ImportService {
                     // Проверка уникальности StudyGroup
                     String studyGroupName = (String) group.get("name");
                     if (studyGroupService.existsByName(studyGroupName)) {
-                        throw new StudyGroupAlreadyExistsException("StudyGroup with name '" + studyGroupName + "' already exists for this user.");
+                        throw new DublicateFileException("StudyGroup with name '" + studyGroupName + "' already exists for this user.");
                     }
 
                     // Создание Coordinates
@@ -76,7 +73,7 @@ public class ImportService {
                         float x = ((Number) coordinatesData.get("x")).floatValue();
                         double y = ((Number) coordinatesData.get("y")).doubleValue();
                         if (coordinatesService.existsByXAndY(x, y)) {
-                            throw new CoordinatesAlreadyExistsException("Coordinates with x=" + x + " and y=" + y + " already exist for this user.");
+                            throw new DublicateFileException("Coordinates with x=" + x + " and y=" + y + " already exist for this user.");
                         }
                         coordinates = new Coordinates();
                         coordinates.setX(x);
@@ -93,7 +90,7 @@ public class ImportService {
                         if (locationData != null) {
                             String locationName = (String) locationData.get("name");
                             if (locationService.existsByName(locationName)) {
-                                throw new LocationAlreadyExistsException("Location with name '" + locationName + "' already exists for this user.");
+                                throw new DublicateFileException("Location with name '" + locationName + "' already exists for this user.");
                             }
                             location = new Location();
                             location.setX(((Number) locationData.get("x")).floatValue());
@@ -148,7 +145,7 @@ public class ImportService {
         // Пакетное сохранение StudyGroup
         studyGroupService.saveAll(studyGroupList);
 
-        return studyGroupList.size();
+        return CompletableFuture.completedFuture(studyGroupList.size());
     }
 
     private Coordinates createCoordinates(Map<String, Object> group) {

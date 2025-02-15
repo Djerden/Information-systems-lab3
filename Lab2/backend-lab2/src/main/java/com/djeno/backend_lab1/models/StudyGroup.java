@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "study_groups")
+@Table(name = "study_groups", indexes = @Index(name = "idx_group_name", columnList = "name"))
 public class StudyGroup {
 
     @Id
