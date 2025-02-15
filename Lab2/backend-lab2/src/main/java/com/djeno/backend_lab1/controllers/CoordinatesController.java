@@ -27,8 +27,9 @@ public class CoordinatesController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Coordinates>> getAllCoordinates() {
-        return ResponseEntity.ok(coordinatesService.getAllCoordinates());
+    public ResponseEntity<List<Coordinates>> getAllCoordinates(@RequestParam(required = false, defaultValue = "50") int count) {
+
+        return ResponseEntity.ok(coordinatesService.getAllCoordinates(count));
     }
 
     @GetMapping("/{id}")

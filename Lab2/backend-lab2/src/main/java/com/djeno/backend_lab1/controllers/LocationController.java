@@ -22,8 +22,8 @@ public class LocationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Location>> getAllLocations() {
-        return ResponseEntity.ok(locationService.getAllLocations());
+    public ResponseEntity<List<Location>> getAllLocations(@RequestParam(required = false, defaultValue = "50") int count) {
+        return ResponseEntity.ok(locationService.getAllLocations(count));
     }
 
 

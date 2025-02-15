@@ -38,8 +38,9 @@ public class ImportService {
     private final StudyGroupService studyGroupService;
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
-    @Async("taskExecutor")
-    public CompletableFuture<Integer> importYamlData(InputStream inputStream, User user) {
+//    @Async("taskExecutor")
+//    public CompletableFuture<Integer> importYamlData(InputStream inputStream, User user) {
+    public int importYamlData(InputStream inputStream, User user) {
         List<Coordinates> coordinatesList = new ArrayList<>();
         List<Location> locationList = new ArrayList<>();
         List<Person> personList = new ArrayList<>();
@@ -63,7 +64,7 @@ public class ImportService {
                     // Проверка уникальности StudyGroup
                     String studyGroupName = (String) group.get("name");
                     if (studyGroupService.existsByName(studyGroupName)) {
-                        throw new DublicateFileException("StudyGroup with name '" + studyGroupName + "' already exists for this user.");
+                        throw new DublicateFileException("StudyGroup with name '" + studyGroupName + "' already exists.");
                     }
 
                     // Создание Coordinates
@@ -73,7 +74,7 @@ public class ImportService {
                         float x = ((Number) coordinatesData.get("x")).floatValue();
                         double y = ((Number) coordinatesData.get("y")).doubleValue();
                         if (coordinatesService.existsByXAndY(x, y)) {
-                            throw new DublicateFileException("Coordinates with x=" + x + " and y=" + y + " already exist for this user.");
+                            throw new DublicateFileException("Coordinates with x=" + x + " and y=" + y + " already exists.");
                         }
                         coordinates = new Coordinates();
                         coordinates.setX(x);
@@ -90,7 +91,7 @@ public class ImportService {
                         if (locationData != null) {
                             String locationName = (String) locationData.get("name");
                             if (locationService.existsByName(locationName)) {
-                                throw new DublicateFileException("Location with name '" + locationName + "' already exists for this user.");
+                                throw new DublicateFileException("Location with name '" + locationName + "' already exists.");
                             }
                             location = new Location();
                             location.setX(((Number) locationData.get("x")).floatValue());
@@ -145,7 +146,8 @@ public class ImportService {
         // Пакетное сохранение StudyGroup
         studyGroupService.saveAll(studyGroupList);
 
-        return CompletableFuture.completedFuture(studyGroupList.size());
+//        return CompletableFuture.completedFuture(studyGroupList.size());\
+        return studyGroupList.size();
     }
 
     private Coordinates createCoordinates(Map<String, Object> group) {

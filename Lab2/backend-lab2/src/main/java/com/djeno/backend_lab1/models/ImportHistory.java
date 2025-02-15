@@ -32,4 +32,7 @@ public class ImportHistory {
 
     @Column(name = "added_objects", nullable = false)
     private int addedObjects; // Число добавленных объектов
+
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
 }

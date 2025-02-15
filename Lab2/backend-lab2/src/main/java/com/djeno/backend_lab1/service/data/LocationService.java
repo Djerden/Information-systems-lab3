@@ -6,6 +6,8 @@ import com.djeno.backend_lab1.models.enums.Role;
 import com.djeno.backend_lab1.repositories.LocationRepository;
 import com.djeno.backend_lab1.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,8 +45,15 @@ public class LocationService {
         return location;
     }
 
-    public List<Location> getAllLocations() {
-        return locationRepository.findAll();
+    public List<Location> getAllLocations(int count) {
+        if (count > 0) {
+            // Пагинация: извлекаем первые `count` объектов
+            Pageable pageable = PageRequest.of(0, count);
+            return locationRepository.findAll(pageable).getContent();
+        } else {
+            // Если count <= 0, возвращаем все записи
+            return locationRepository.findAll();
+        }
     }
 
     // Обновление Location

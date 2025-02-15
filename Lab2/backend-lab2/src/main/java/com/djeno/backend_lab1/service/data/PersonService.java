@@ -10,6 +10,8 @@ import com.djeno.backend_lab1.repositories.LocationRepository;
 import com.djeno.backend_lab1.repositories.PersonRepository;
 import com.djeno.backend_lab1.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,8 +72,15 @@ public class PersonService {
         return person;
     }
 
-    public List<Person> getAllPersons() {
-        return personRepository.findAll();
+    public List<Person> getAllPersons(int count) {
+        if (count > 0) {
+            // Ограничиваем количество возвращаемых объектов
+            Pageable pageable = PageRequest.of(0, count);
+            return personRepository.findAll(pageable).getContent();
+        } else {
+            // Если count <= 0, возвращаем все записи
+            return personRepository.findAll();
+        }
     }
 
     // Обновление Person

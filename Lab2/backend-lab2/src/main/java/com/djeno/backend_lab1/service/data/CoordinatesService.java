@@ -7,6 +7,7 @@ import com.djeno.backend_lab1.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -46,8 +47,14 @@ public class CoordinatesService {
         return coordinates;
     }
 
-    public List<Coordinates> getAllCoordinates() {
-        return coordinatesRepository.findAll();
+    public List<Coordinates> getAllCoordinates(int count) {
+        if (count > 0) {
+            Pageable pageable = PageRequest.of(0, count);
+            return coordinatesRepository.findAll(pageable).getContent();
+        } else {
+            // Если count <= 0, возвращаем все записи
+            return coordinatesRepository.findAll();
+        }
     }
 
     // Обновление Coordinates

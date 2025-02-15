@@ -24,8 +24,8 @@ public class PersonController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Person>> getAllPersons() {
-        return ResponseEntity.ok(personService.getAllPersons());
+    public ResponseEntity<List<Person>> getAllPersons(@RequestParam(required = false, defaultValue = "50") int count) {
+        return ResponseEntity.ok(personService.getAllPersons(count));
     }
 
     @GetMapping("/{id}")

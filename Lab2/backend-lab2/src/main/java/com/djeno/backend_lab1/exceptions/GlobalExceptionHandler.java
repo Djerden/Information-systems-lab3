@@ -25,15 +25,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
-    @ExceptionHandler(DublicateFileException.class)
-    public ResponseEntity<String> handleStudyGroupAlreadyExistsException(StudyGroupAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
+//    @ExceptionHandler(DublicateFileException.class)
+//    public ResponseEntity<String> handleStudyGroupAlreadyExistsException(StudyGroupAlreadyExistsException ex) {
+//        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+//    }
 
-    @ExceptionHandler(TooManyRequestsException.class)
-    public ResponseEntity<String> handleTooManyRequestsException(TooManyRequestsException ex) {
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ex.getMessage());
-    }
+//    @ExceptionHandler(TooManyRequestsException.class)
+//    public ResponseEntity<String> handleTooManyRequestsException(TooManyRequestsException ex) {
+//        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ex.getMessage());
+//    }
 
     @ExceptionHandler(LocationNameAlreadyExistsException.class)
     public ResponseEntity<String> handleLocationNameAlreadyExists(LocationNameAlreadyExistsException ex) {

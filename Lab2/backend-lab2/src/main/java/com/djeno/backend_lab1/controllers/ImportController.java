@@ -3,6 +3,7 @@ package com.djeno.backend_lab1.controllers;
 import com.djeno.backend_lab1.DTO.ImportHistoryDTO;
 import com.djeno.backend_lab1.DTO.PersonDTO;
 import com.djeno.backend_lab1.DTO.StudyGroupDTO;
+import com.djeno.backend_lab1.exceptions.DublicateFileException;
 import com.djeno.backend_lab1.exceptions.TooManyRequestsException;
 import com.djeno.backend_lab1.models.*;
 import com.djeno.backend_lab1.models.enums.ImportStatus;
@@ -57,54 +58,82 @@ public class ImportController {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Too many concurrent requests. Please try again later.");
         }
 
+        String filename = file.getOriginalFilename();
+        if (filename == null || (!filename.endsWith(".yaml") && !filename.endsWith(".yml"))) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid file type. Only .yaml or .yml files are allowed.");
+        }
+
         User currentUser = userService.getCurrentUser();
         Long userId = currentUser.getId();
+        ImportHistory importHistory = null;
 
         try {
             userRequestLimiter.acquirePermission(userId);
 
-            ImportHistory importHistory = ImportHistory.builder()
+            importHistory = ImportHistory.builder()
                     .user(currentUser)
                     .status(ImportStatus.PROCESSING)
                     .timestamp(LocalDateTime.now())
                     .addedObjects(0)
+                    .fileName(filename)
                     .build();
             importHistory = importHistoryService.saveImportHistory(importHistory);
 
-            // Асинхронное выполнение импорта данных
-            CompletableFuture<Integer> addedObjects = importService.importYamlData(file.getInputStream(), currentUser);
+            int addedObjects = importService.importYamlData(file.getInputStream(), currentUser);
 
-            // Обрабатываем завершение асинхронной операции
-            ImportHistory finalImportHistory = importHistory;
-            addedObjects.whenComplete((result, exception) -> {
-                try {
-                    if (exception == null) {
-                        finalImportHistory.setStatus(ImportStatus.SUCCESS);
-                        finalImportHistory.setAddedObjects(result);
-                    } else {
-                        finalImportHistory.setStatus(ImportStatus.FAILED);
-                    }
-                    importHistoryService.saveImportHistory(finalImportHistory); // Сохраняем результат
-                } finally {
-                    // Освобождаем разрешение пользователя после завершения
-                    userRequestLimiter.releasePermission(userId);
-                    // Освобождаем разрешение для запроса
-                    semaphore.release();
-                }
-            });
+            importHistory.setStatus(ImportStatus.SUCCESS);
+            importHistory.setAddedObjects(addedObjects);
+            importHistoryService.saveImportHistory(importHistory);
 
-            return ResponseEntity.ok("Data is being processed. You will be see in history");
+            semaphore.release();
+            userRequestLimiter.releasePermission(userId);
+
+            return ResponseEntity.ok("Data saved successfully.");
 
         } catch (TooManyRequestsException e) {
-            // Если пользователь превысил лимит запросов
-            semaphore.release(); // Освобождаем семафор в случае исключения
-            throw e;
-        } catch (Exception e) {
             semaphore.release();
-            userRequestLimiter.releasePermission(userId); // Освобождаем разрешение пользователя
-            throw e; // Пробрасываем исключение дальше
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(e.getMessage());
+        } catch (DublicateFileException e) {
+            if(importHistory != null) {
+                importHistory.setStatus(ImportStatus.FAILED);
+                importHistoryService.saveImportHistory(importHistory);
+            }
+            semaphore.release();
+            userRequestLimiter.releasePermission(userId);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            if (importHistory != null) {
+                importHistory.setStatus(ImportStatus.FAILED);
+                importHistoryService.saveImportHistory(importHistory);  // Записываем статус ошибки
+            }
+            semaphore.release();
+            userRequestLimiter.releasePermission(userId);
+            throw e;
         }
     }
+
+    //            // Асинхронное выполнение импорта данных
+//            CompletableFuture<Integer> addedObjects = importService.importYamlData(file.getInputStream(), currentUser);
+//
+//            // Обрабатываем завершение асинхронной операции
+//            ImportHistory finalImportHistory = importHistory;
+//            addedObjects.whenComplete((result, exception) -> {
+//                try {
+//                    if (exception == null) {
+//                        finalImportHistory.setStatus(ImportStatus.SUCCESS);
+//                        finalImportHistory.setAddedObjects(result);
+//                    } else {
+//                        finalImportHistory.setStatus(ImportStatus.FAILED);
+//                        throw new RuntimeException(exception.getMessage(), exception);
+//                    }
+//                } finally {
+//                    importHistoryService.saveImportHistory(finalImportHistory); // Сохраняем результат
+//                    // Освобождаем разрешение пользователя после завершения
+//                    userRequestLimiter.releasePermission(userId);
+//                    // Освобождаем разрешение для запроса
+//                    semaphore.release();
+//                }
+//            });
 
     // Эндпоинт для получения истории импорта пользователя
     @GetMapping("/history/user")

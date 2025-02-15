@@ -17,4 +17,6 @@ public class ImportHistoryDTO {
     private LocalDateTime timestamp; // Время операции
 
     private int addedObjects; // Число добавленных объектов
+
+    private String fileName;
 }
