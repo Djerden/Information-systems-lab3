@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+    import React, { useEffect, useState } from "react";
 import ImportFilesModal from "../../components/modal_windows/ImportFileModal.jsx";
 import { Client } from "@stomp/stompjs";
 
@@ -41,7 +41,7 @@ export default function ImportHistory() {
             setPage(newPage);
         }
     };
-
+    console.log(importHistory)
     // WebSocket client
     useEffect(() => {
         const client = new Client({
@@ -90,6 +90,7 @@ export default function ImportHistory() {
                     <th className="border border-gray-300 px-4 py-2">Status</th>
                     <th className="border border-gray-300 px-4 py-2">Date</th>
                     <th className="border border-gray-300 px-4 py-2">Added Objects</th>
+                    <th className="border border-gray-300 px-4 py-2">File Name</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -99,11 +100,12 @@ export default function ImportHistory() {
                         <td className="border border-gray-300 px-4 py-2">{operation.user.username}</td>
                         <td className="border border-gray-300 px-4 py-2">{operation.status}</td>
                         <td className="border border-gray-300 px-4 py-2">
-                            {new Date(operation.createdAt).toLocaleString("ru-RU")}
+                            {new Date(operation.timestamp).toLocaleString("ru-RU")}
                         </td>
                         <td className="border border-gray-300 px-4 py-2">
                             {operation.status === "SUCCESS" ? operation.addedObjects : "-"}
                         </td>
+                        <td className="border border-gray-300 px-4 py-2">{operation.fileName}</td>
                     </tr>
                 ))}
                 </tbody>
@@ -111,7 +113,7 @@ export default function ImportHistory() {
 
             <div className="flex justify-between items-center mt-4">
                 <button
-                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                    className="px-4 py-2 bg-indigo-500 text-white rounded"
                     onClick={() => handlePageChange(page - 1)}
                     disabled={page === 0}
                 >
@@ -119,7 +121,7 @@ export default function ImportHistory() {
                 </button>
                 <span>{`Page ${page + 1} of ${totalPages}`}</span>
                 <button
-                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                    className="px-4 py-2 bg-indigo-500 text-white rounded"
                     onClick={() => handlePageChange(page + 1)}
                     disabled={page === totalPages - 1}
                 >

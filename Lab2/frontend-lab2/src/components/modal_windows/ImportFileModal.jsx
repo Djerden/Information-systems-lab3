@@ -6,6 +6,7 @@ Modal.setAppElement("#root");
 export default function ImportFilesModal({ isOpen, onRequestClose, onFilesImported }) {
     const [file, setFile] = useState(null); // Хранение файла
     const [error, setError] = useState(""); // Хранение сообщения об ошибке
+    const [responseInfo, setResponseInfo] = useState("");
     const [progress, setProgress] = useState(0); // Хранение прогресса загрузки
     const token = sessionStorage.getItem("jwt");
 
@@ -13,6 +14,12 @@ export default function ImportFilesModal({ isOpen, onRequestClose, onFilesImport
         setFile(null);
         setError("");
         setProgress(0);
+        setResponseInfo("");
+    }
+
+    // Функция для задержки (с использованием Promise)
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     async function handleImport() {
@@ -34,10 +41,16 @@ export default function ImportFilesModal({ isOpen, onRequestClose, onFilesImport
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to import file.");
+                const errorData = await response.text();
+                const errorMessage = errorData || "Failed to import file.";
+                throw new Error(errorData);
             }
 
+            // Сохраняем успешный ответ в состояние
+            const successData = await response.text();
+            setResponseInfo(successData);
+            // Задержка на 2 секунды
+            await sleep(2000);
             resetForm();
             onRequestClose();
             if (onFilesImported) onFilesImported();
@@ -82,6 +95,7 @@ export default function ImportFilesModal({ isOpen, onRequestClose, onFilesImport
 
             {/* Сообщение об ошибке */}
             {error && <div className="mb-4 text-red-500 font-medium">{error}</div>}
+            {responseInfo && <div className="mb-4 text-green-500 font-medium">{responseInfo}</div>}
 
             {/* Поле для выбора файла */}
             <div className="mb-4">
