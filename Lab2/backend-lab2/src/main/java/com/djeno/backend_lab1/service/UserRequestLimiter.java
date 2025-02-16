@@ -11,10 +11,6 @@ public class UserRequestLimiter {
 
     private final ConcurrentHashMap<Long, Semaphore> userSemaphores = new ConcurrentHashMap<>();
 
-    /**
-     * Пытается получить разрешение на выполнение запроса для пользователя.
-     * Если разрешение не получено, выбрасывает исключение.
-     */
     public void acquirePermission(Long userId) {
         Semaphore semaphore = userSemaphores.computeIfAbsent(userId, k -> new Semaphore(2)); // Ограничение: 2 запроса одновременно
         if (!semaphore.tryAcquire()) {
@@ -22,9 +18,6 @@ public class UserRequestLimiter {
         }
     }
 
-    /**
-     * Освобождает разрешение для пользователя.
-     */
     public void releasePermission(Long userId) {
         Semaphore semaphore = userSemaphores.get(userId);
         if (semaphore != null) {

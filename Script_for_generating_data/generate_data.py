@@ -21,36 +21,42 @@ def generate_coordinates():
     }
 
 # Генерация случайного объекта Location
-def generate_location():
+def generate_location(index):
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
     return {
         'x': random.uniform(-180, 180),
         'y': random.randint(-90, 90),
-        'name': fake.city(),
+        'name': f"Location_{timestamp}_{index}",
     }
 
 # Генерация случайного объекта Person
-def generate_person():
+def generate_person(index):
     return {
         'name': fake.name(),
         'eye_color': random.choice(colors),
         'hair_color': random.choice(colors),
-        'location': generate_location(),
+        'location': generate_location(index),
         'weight': random.uniform(40, 100),
         'nationality': random.choice(countries),
     }
 
+# Генерация уникальных имен для групп с использованием времени
+def generate_unique_group_name(index):
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")  # Текущая метка времени с наносекундами
+    return f"Group_{timestamp}_{index}"  # Используем метку времени и индекс для уникальности
+
 # Генерация случайного объекта StudyGroup
-def generate_study_group():
+def generate_study_group(index):
     return {
-        'name': fake.word() + ' Group',
+        'name': generate_unique_group_name(index),
         'coordinates': generate_coordinates(),
-        'students_count': random.randint(20, 100),
+        'students_count': random.randint(1, 40),
         'expelled_students': random.randint(1, 50),
         'transferred_students': random.randint(1, 50),
         'form_of_education': random.choice(form_of_education),
         'should_be_expelled': random.randint(1, 50),
         'semester_enum': random.choice(semester_enum),
-        'group_admin': generate_person(),
+        'group_admin': generate_person(index),
     }
 
 # Функция для генерации данных с заданным размером
@@ -65,7 +71,7 @@ def generate_data_file(file_size_mb, num_files):
     os.makedirs('data', exist_ok=True)
 
     for i in range(num_files):
-        data = [generate_study_group() for _ in range(objects_per_file)]
+        data = [generate_study_group(i * objects_per_file + j) for j in range(objects_per_file)]
         
         # Создаем имя файла
         file_name = os.path.join('data', f"study_groups_{i+1}.yaml")

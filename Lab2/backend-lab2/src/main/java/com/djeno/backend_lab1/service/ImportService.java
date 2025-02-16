@@ -46,14 +46,11 @@ public class ImportService {
         List<Person> personList = new ArrayList<>();
         List<StudyGroup> studyGroupList = new ArrayList<>();
 
-        // Настройка LoaderOptions для увеличения лимита
         LoaderOptions loaderOptions = new LoaderOptions();
         loaderOptions.setCodePointLimit(Integer.MAX_VALUE); // Увеличиваем лимит
 
-        // Создание SnakeYAML парсера с настройками
         Yaml yaml = new Yaml(new SafeConstructor(loaderOptions));
 
-        // Парсинг YAML-файла
         Iterable<Object> yamlDocuments = yaml.loadAll(inputStream);
 
         // Обработка документов
@@ -102,7 +99,6 @@ public class ImportService {
                         }
                     }
 
-                    // Создание Person
                     if (adminData != null) {
                         Person person = new Person();
                         person.setName((String) adminData.get("name"));
@@ -115,7 +111,6 @@ public class ImportService {
                         personList.add(person);
                     }
 
-                    // Создание StudyGroup
                     StudyGroup studyGroup = new StudyGroup();
                     studyGroup.setName(studyGroupName);
                     studyGroup.setCreationDate(LocalDate.now()); // Устанавливаем текущую дату
@@ -131,7 +126,7 @@ public class ImportService {
             }
         }
 
-        // Пакетное сохранение Coordinates, Location, Person
+        // Пакетное сохранение
         List<Coordinates> savedCoordinates = coordinatesService.saveAll(coordinatesList);
         List<Location> savedLocations = locationService.saveAll(locationList);
         List<Person> savedPersons = personService.saveAll(personList);
