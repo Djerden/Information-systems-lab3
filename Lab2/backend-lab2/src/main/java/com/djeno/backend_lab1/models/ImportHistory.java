@@ -21,11 +21,11 @@ public class ImportHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user; // Пользователь, запустивший операцию
+    private User user;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private ImportStatus status; // Статус операции (e.g., SUCCESS, FAILED)
+    private ImportStatus status; // Статус операции (PROCESSING, SUCCESS, FAILED)
 
     @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp; // Время операции
@@ -35,4 +35,8 @@ public class ImportHistory {
 
     @Column(name = "file_name", nullable = false)
     private String fileName;
+
+    // Здесь будет храниться уникальный идентификатор файла UUID
+    @Column(name = "file_url")
+    private String fileUrl; // Если null, то файл не был записан, ни в S3, ни в Postgres
 }

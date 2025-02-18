@@ -8,6 +8,7 @@ import com.djeno.backend_lab1.exceptions.TooManyRequestsException;
 import com.djeno.backend_lab1.models.*;
 import com.djeno.backend_lab1.models.enums.ImportStatus;
 import com.djeno.backend_lab1.service.ImportService;
+import com.djeno.backend_lab1.service.MinioService;
 import com.djeno.backend_lab1.service.UserRequestLimiter;
 import com.djeno.backend_lab1.service.UserService;
 import com.djeno.backend_lab1.service.data.*;
@@ -47,6 +48,7 @@ public class ImportController {
     private final ImportHistoryService importHistoryService;
     private final ImportService importService;
     private final UserRequestLimiter userRequestLimiter;
+    private final MinioService minioService;
 
     private final Semaphore semaphore = new Semaphore(20); // Максимум запросов с файлами до 6мб
 
@@ -76,6 +78,7 @@ public class ImportController {
                     .timestamp(LocalDateTime.now())
                     .addedObjects(0)
                     .fileName(filename)
+                    .fileUrl(null)
                     .build();
             importHistory = importHistoryService.saveImportHistory(importHistory);
 
@@ -111,29 +114,6 @@ public class ImportController {
             throw e;
         }
     }
-
-    //            // Асинхронное выполнение импорта данных
-//            CompletableFuture<Integer> addedObjects = importService.importYamlData(file.getInputStream(), currentUser);
-//
-//            // Обрабатываем завершение асинхронной операции
-//            ImportHistory finalImportHistory = importHistory;
-//            addedObjects.whenComplete((result, exception) -> {
-//                try {
-//                    if (exception == null) {
-//                        finalImportHistory.setStatus(ImportStatus.SUCCESS);
-//                        finalImportHistory.setAddedObjects(result);
-//                    } else {
-//                        finalImportHistory.setStatus(ImportStatus.FAILED);
-//                        throw new RuntimeException(exception.getMessage(), exception);
-//                    }
-//                } finally {
-//                    importHistoryService.saveImportHistory(finalImportHistory); // Сохраняем результат
-//                    // Освобождаем разрешение пользователя после завершения
-//                    userRequestLimiter.releasePermission(userId);
-//                    // Освобождаем разрешение для запроса
-//                    semaphore.release();
-//                }
-//            });
 
     // Эндпоинт для получения истории импорта пользователя
     @GetMapping("/history/user")

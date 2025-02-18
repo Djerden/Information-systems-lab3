@@ -35,6 +35,7 @@ services:
       - POSTGRES_DB=is-lab1-db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_MAX_CONNECTIONS=300  # Увеличиваем максимальное количество подключений
     ports:
       - "5432:5432"  # Прокси порт для доступа к БД
     volumes:
@@ -42,9 +43,26 @@ services:
     networks:
       - app-network
 
+  # S3 хранилище
+  minio:
+    image: minio/minio:latest
+    environment:
+      - MINIO_ACCESS_KEY=minio_access_key  # Ключ доступа MinIO
+      - MINIO_SECRET_KEY=minio_secret_key  # Секретный ключ MinIO
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - minio_data:/minio
+    command: server ~/minio --console-address :9090 # Команда для запуска MinIO с использованием тома для данных
+    networks:
+      - app-network
+
 # Определение volume
 volumes:
   postgres_data:
+    driver: local
+  minio_data:
     driver: local
 
 networks:
