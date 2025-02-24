@@ -1,6 +1,7 @@
     import React, { useEffect, useState } from "react";
 import ImportFilesModal from "../../components/modal_windows/ImportFileModal.jsx";
 import { Client } from "@stomp/stompjs";
+    import {FaDownload} from "react-icons/fa";
 
 export default function ImportHistory() {
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -71,6 +72,30 @@ export default function ImportHistory() {
         fetchHistory();
     }, [page, size, sortBy, direction, status]);
 
+
+    const handleDownloadFile = async (fileUrl, fileName) => {
+        try {
+            const response = await fetch(`http://localhost:8080/import/download/${fileUrl}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+            } else {
+                console.error("Ошибка при скачивании файла");
+            }
+        } catch (error) {
+            console.error("Не удалось скачать файл:", error);
+        }
+    };
+
     return (
         <div className="container mx-auto p-4">
             <div className="text-left mb-4">
@@ -91,6 +116,7 @@ export default function ImportHistory() {
                     <th className="border border-gray-300 px-4 py-2">Date</th>
                     <th className="border border-gray-300 px-4 py-2">Added Objects</th>
                     <th className="border border-gray-300 px-4 py-2">File Name</th>
+                    <th className="border border-gray-300 px-4 py-2">Download</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -106,6 +132,16 @@ export default function ImportHistory() {
                             {operation.status === "SUCCESS" ? operation.addedObjects : "-"}
                         </td>
                         <td className="border border-gray-300 px-4 py-2">{operation.fileName}</td>
+                        <td className="border border-gray-300 px-4 py-2">
+                            {operation.fileUrl && (
+                                <button
+                                    className="text-blue-500 hover:underline"
+                                    onClick={() => handleDownloadFile(operation.fileUrl, operation.fileName)}
+                                >
+                                    <FaDownload />
+                                </button>
+                            )}
+                        </td>
                     </tr>
                 ))}
                 </tbody>

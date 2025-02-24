@@ -19,4 +19,6 @@ public class ImportHistoryDTO {
     private int addedObjects; // Число добавленных объектов
 
     private String fileName;
+
+    private String fileUrl; // уникальное имя для поиска его в БД
 }

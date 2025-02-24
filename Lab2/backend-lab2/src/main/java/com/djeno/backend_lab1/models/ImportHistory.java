@@ -38,5 +38,5 @@ public class ImportHistory {
 
     // Здесь будет храниться уникальный идентификатор файла UUID
     @Column(name = "file_url")
-    private String fileUrl; // Если null, то файл не был записан, ни в S3, ни в Postgres
+    private String fileUrl;
 }

@@ -19,7 +19,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +43,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 
 @RestController
-@RequestMapping("import")
+@RequestMapping("/import")
 @RequiredArgsConstructor
 public class ImportController {
 
@@ -82,10 +85,13 @@ public class ImportController {
                     .build();
             importHistory = importHistoryService.saveImportHistory(importHistory);
 
+            String fileUrl = minioService.uploadFile(file); // Загрузка файла в Minio, уникальное имя никуда не сохранено
+
             int addedObjects = importService.importYamlData(file.getInputStream(), currentUser);
 
             importHistory.setStatus(ImportStatus.SUCCESS);
             importHistory.setAddedObjects(addedObjects);
+            importHistory.setFileUrl(fileUrl);
             importHistoryService.saveImportHistory(importHistory);
 
             semaphore.release();
@@ -139,5 +145,21 @@ public class ImportController {
 
         Page<ImportHistoryDTO> history = importHistoryService.getAllHistory(page, size, sortBy, direction, status);
         return ResponseEntity.ok(history);
+    }
+
+    @GetMapping("/download/{fileUrl}")
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String fileUrl) {
+        try {
+            InputStream inputStream = minioService.downloadFile(fileUrl);
+
+            InputStreamResource resource = new InputStreamResource(inputStream);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileUrl + "\"")
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 }

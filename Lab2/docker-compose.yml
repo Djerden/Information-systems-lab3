@@ -47,8 +47,8 @@ services:
   minio:
     image: minio/minio:latest
     environment:
-      - MINIO_ACCESS_KEY=minio_access_key  # Ключ доступа MinIO
-      - MINIO_SECRET_KEY=minio_secret_key  # Секретный ключ MinIO
+      - MINIO_ACCESS_KEY=admin  # Ключ доступа MinIO
+      - MINIO_SECRET_KEY=12345678  # Секретный ключ MinIO
     ports:
       - "9000:9000"
       - "9090:9090"

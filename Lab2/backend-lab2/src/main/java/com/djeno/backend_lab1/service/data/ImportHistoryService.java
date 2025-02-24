@@ -84,6 +84,7 @@ public class ImportHistoryService {
         dto.setTimestamp(importHistory.getTimestamp());
         dto.setAddedObjects(importHistory.getAddedObjects());
         dto.setFileName(importHistory.getFileName());
+        dto.setFileUrl(importHistory.getFileUrl());
         return dto;
     }
 

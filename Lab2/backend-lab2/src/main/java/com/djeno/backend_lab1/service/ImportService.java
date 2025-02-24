@@ -38,8 +38,6 @@ public class ImportService {
     private final StudyGroupService studyGroupService;
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
-//    @Async("taskExecutor")
-//    public CompletableFuture<Integer> importYamlData(InputStream inputStream, User user) {
     public int importYamlData(InputStream inputStream, User user) {
         List<Coordinates> coordinatesList = new ArrayList<>();
         List<Location> locationList = new ArrayList<>();
