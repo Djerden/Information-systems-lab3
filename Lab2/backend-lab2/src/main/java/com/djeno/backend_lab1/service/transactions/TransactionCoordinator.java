@@ -36,6 +36,7 @@ public class TransactionCoordinator {
                 break;
             }
         }
+
         // commit
         if(allPrepared) {
             System.out.println("Участники готовы к коммиту. Коммит...");
@@ -43,17 +44,19 @@ public class TransactionCoordinator {
                 for (TransactionParticipant participant : listOfParticipants) {
                     participant.commit();
                 }
+
             // rollback во время ошибки при коммите
             } catch (Exception e) {
                 System.out.println("Ошибка при общем коммите: " + e.getMessage() + " Откат...");
                 rollback();
-                throw new RuntimeException("Failed");
+                throw new RuntimeException("Transaction failed");
             }
+
         // rollback, если участники не готовы
         } else {
             System.out.println("Участники не готовы, откат...");
             rollback();
-            throw new RuntimeException("Failed");
+            throw new RuntimeException("Transaction failed");
         }
     }
 

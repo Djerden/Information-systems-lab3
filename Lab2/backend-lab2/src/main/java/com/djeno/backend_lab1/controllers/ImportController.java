@@ -123,7 +123,7 @@ public class ImportController {
                 importHistory.setStatus(ImportStatus.FAILED);
                 importHistory.setAddedObjects(0);
                 importHistory.setFileUrl(null);
-                importHistoryService.saveImportHistory(importHistory);  // Записываем статус ошибки
+                importHistoryService.saveImportHistory(importHistory);
             }
             semaphore.release();
             userRequestLimiter.releasePermission(userId);

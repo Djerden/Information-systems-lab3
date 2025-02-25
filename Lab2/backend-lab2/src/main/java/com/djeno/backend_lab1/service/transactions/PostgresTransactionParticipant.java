@@ -52,7 +52,7 @@ public class PostgresTransactionParticipant implements TransactionParticipant {
             }
 
             try {
-                int addedObjects = importService.saveData(dataContainer); // возвращает количество добавленных обьектов, как получить?
+                int addedObjects = importService.saveData(dataContainer);
                 importHistory.setAddedObjects(addedObjects);
                 System.out.println("Postgres: закоммитил изменения");
             } catch (Exception e) {

@@ -62,7 +62,6 @@ public class MinioTransactionParticipant implements TransactionParticipant {
             minioService.deleteFile(fileUrl, BUCKET_NAME);
             importHistory.setFileUrl(null);
             System.out.println("Minio: изменения были откачены");
-            // возможно стоит удалить тестовый бакет
         } else {
             System.out.println("Minio: в rollback нечего откатывать");
         }
