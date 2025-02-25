@@ -12,6 +12,10 @@ import com.djeno.backend_lab1.service.MinioService;
 import com.djeno.backend_lab1.service.UserRequestLimiter;
 import com.djeno.backend_lab1.service.UserService;
 import com.djeno.backend_lab1.service.data.*;
+import com.djeno.backend_lab1.service.transactions.MinioTransactionParticipant;
+import com.djeno.backend_lab1.service.transactions.PostgresTransactionParticipant;
+import com.djeno.backend_lab1.service.transactions.TransactionCoordinator;
+import com.djeno.backend_lab1.service.transactions.TransactionParticipant;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -85,13 +89,15 @@ public class ImportController {
                     .build();
             importHistory = importHistoryService.saveImportHistory(importHistory);
 
-            String fileUrl = minioService.uploadFile(file); // Загрузка файла в Minio, уникальное имя никуда не сохранено
-
-            int addedObjects = importService.importYamlData(file.getInputStream(), currentUser);
+            TransactionParticipant minioParticipant = new MinioTransactionParticipant(minioService, file, importHistory);
+            TransactionParticipant postgresParticipant = new PostgresTransactionParticipant(importService, file, importHistory);
+            TransactionCoordinator coordinator = new TransactionCoordinator();
+            coordinator.addParticipant(minioParticipant);
+            coordinator.addParticipant(postgresParticipant);
+            coordinator.execute();
 
             importHistory.setStatus(ImportStatus.SUCCESS);
-            importHistory.setAddedObjects(addedObjects);
-            importHistory.setFileUrl(fileUrl);
+
             importHistoryService.saveImportHistory(importHistory);
 
             semaphore.release();
@@ -105,6 +111,8 @@ public class ImportController {
         } catch (DublicateFileException e) {
             if(importHistory != null) {
                 importHistory.setStatus(ImportStatus.FAILED);
+                importHistory.setAddedObjects(0);
+                importHistory.setFileUrl(null);
                 importHistoryService.saveImportHistory(importHistory);
             }
             semaphore.release();
@@ -113,11 +121,13 @@ public class ImportController {
         } catch (Exception e) {
             if (importHistory != null) {
                 importHistory.setStatus(ImportStatus.FAILED);
+                importHistory.setAddedObjects(0);
+                importHistory.setFileUrl(null);
                 importHistoryService.saveImportHistory(importHistory);  // Записываем статус ошибки
             }
             semaphore.release();
             userRequestLimiter.releasePermission(userId);
-            throw e;
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
@@ -150,7 +160,7 @@ public class ImportController {
     @GetMapping("/download/{fileUrl}")
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String fileUrl) {
         try {
-            InputStream inputStream = minioService.downloadFile(fileUrl);
+            InputStream inputStream = minioService.downloadFile(fileUrl, "imported-files");
 
             InputStreamResource resource = new InputStreamResource(inputStream);
 

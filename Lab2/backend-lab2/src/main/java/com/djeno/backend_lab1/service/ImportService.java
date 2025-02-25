@@ -1,5 +1,6 @@
 package com.djeno.backend_lab1.service;
 
+import com.djeno.backend_lab1.DTO.DataContainer;
 import com.djeno.backend_lab1.DTO.PersonDTO;
 import com.djeno.backend_lab1.DTO.StudyGroupDTO;
 import com.djeno.backend_lab1.exceptions.DublicateFileException;
@@ -17,10 +18,12 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -37,8 +40,14 @@ public class ImportService {
     private final PersonService personService;
     private final StudyGroupService studyGroupService;
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+    private final UserService userService;
 
-    public int importYamlData(InputStream inputStream, User user) {
+    // prepare метод
+    public DataContainer parseYamlFileAndCheckConstraints(MultipartFile file) throws IOException {
+        User user = userService.getCurrentUser();
+
+        InputStream inputStream = file.getInputStream();
+
         List<Coordinates> coordinatesList = new ArrayList<>();
         List<Location> locationList = new ArrayList<>();
         List<Person> personList = new ArrayList<>();
@@ -123,24 +132,24 @@ public class ImportService {
                 }
             }
         }
+        DataContainer dataContainer = new DataContainer(coordinatesList, locationList, personList, studyGroupList);
+        return dataContainer;
+    }
 
-        // Пакетное сохранение
-        List<Coordinates> savedCoordinates = coordinatesService.saveAll(coordinatesList);
-        List<Location> savedLocations = locationService.saveAll(locationList);
-        List<Person> savedPersons = personService.saveAll(personList);
-
+    // commit метод
+    public int saveData(DataContainer dataContainer) {
+        List<Coordinates> savedCoordinates = coordinatesService.saveAll(dataContainer.getCoordinatesList());
+        List<Location> savedLocations = locationService.saveAll(dataContainer.getLocationList());
+        List<Person> savedPersons = personService.saveAll(dataContainer.getPersonList());
         // Связывание StudyGroup с сохраненными объектами
-        for (int i = 0; i < studyGroupList.size(); i++) {
-            StudyGroup studyGroup = studyGroupList.get(i);
+        for (int i = 0; i < dataContainer.getStudyGroupList().size(); i++) {
+            StudyGroup studyGroup = dataContainer.getStudyGroupList().get(i);
             studyGroup.setCoordinates(savedCoordinates.get(i));
             studyGroup.setGroupAdmin(savedPersons.get(i));
         }
+        studyGroupService.saveAll(dataContainer.getStudyGroupList());
 
-        // Пакетное сохранение StudyGroup
-        studyGroupService.saveAll(studyGroupList);
-
-//        return CompletableFuture.completedFuture(studyGroupList.size());\
-        return studyGroupList.size();
+        return dataContainer.getStudyGroupList().size();
     }
 
     private Coordinates createCoordinates(Map<String, Object> group) {
