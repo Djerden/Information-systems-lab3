@@ -1,13 +1,14 @@
 package com.djeno.backend_lab1.exceptions;
 
 import com.djeno.backend_lab1.DTO.ErrorResponse;
+import com.djeno.backend_lab1.DTO.SimpleMessage;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -23,6 +24,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Void> handleCannotAcquireLockException() {
         // Возвращаем HTTP-статус 409 Conflict без тела ответа
         return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @ExceptionHandler(UnexpectedRollbackException.class)
+    public ResponseEntity<SimpleMessage> handleUnexpectedRollbackException(UnexpectedRollbackException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new SimpleMessage("Transaction can't be commited"));
     }
 
 //    @ExceptionHandler(DublicateFileException.class)

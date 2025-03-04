@@ -60,7 +60,7 @@ public class ImportController {
     private final Semaphore semaphore = new Semaphore(20); // Максимум запросов с файлами до 6мб
 
     @PostMapping(value = "/yaml", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    @Transactional(isolation = Isolation.SERIALIZABLE) //Isolation.READ_UNCOMMITTED)
     public ResponseEntity<?> importYaml(@RequestParam("file") MultipartFile file) throws IOException, ExecutionException, InterruptedException {
 
         if (!semaphore.tryAcquire()) {
@@ -113,7 +113,11 @@ public class ImportController {
                 importHistory.setStatus(ImportStatus.FAILED);
                 importHistory.setAddedObjects(0);
                 importHistory.setFileUrl(null);
-                importHistoryService.saveImportHistory(importHistory);
+                try {
+                    importHistoryService.saveImportHistory(importHistory);
+                } catch (Exception e1) {
+                    System.out.println("Обновить состояние истории не возможно, Postgres не откликается");
+                }
             }
             semaphore.release();
             userRequestLimiter.releasePermission(userId);
@@ -123,7 +127,11 @@ public class ImportController {
                 importHistory.setStatus(ImportStatus.FAILED);
                 importHistory.setAddedObjects(0);
                 importHistory.setFileUrl(null);
-                importHistoryService.saveImportHistory(importHistory);
+                try {
+                    importHistoryService.saveImportHistory(importHistory);
+                } catch (Exception e1) {
+                    System.out.println("Обновить состояние истории не возможно, Postgres не откликается");
+                }
             }
             semaphore.release();
             userRequestLimiter.releasePermission(userId);
