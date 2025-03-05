@@ -13,6 +13,7 @@ import com.djeno.backend_lab1.service.WebSocketNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class ImportHistoryService {
     private final WebSocketNotificationService webSocketNotificationService;
 
     // Сохранится в любом случае, даже если транзакция по записи данных откатится
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public ImportHistory saveImportHistory(ImportHistory importHistory) {
         webSocketNotificationService.sendNotification("import-history", "saved");
         return importHistoryRepository.save(importHistory);

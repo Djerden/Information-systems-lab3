@@ -18,6 +18,9 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -42,11 +45,12 @@ public class ImportService {
     private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     private final UserService userService;
 
-    // prepare метод
-    public DataContainer parseYamlFileAndCheckConstraints(MultipartFile file) throws IOException {
-        User user = userService.getCurrentUser();
+    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
+    public int importYamlData(MultipartFile file) throws IOException {
 
         InputStream inputStream = file.getInputStream();
+
+        User user = userService.getCurrentUser();
 
         List<Coordinates> coordinatesList = new ArrayList<>();
         List<Location> locationList = new ArrayList<>();
@@ -132,66 +136,24 @@ public class ImportService {
                 }
             }
         }
-        DataContainer dataContainer = new DataContainer(coordinatesList, locationList, personList, studyGroupList);
-        return dataContainer;
-    }
 
-    // commit метод
-    public int saveData(DataContainer dataContainer) {
-        List<Coordinates> savedCoordinates = coordinatesService.saveAll(dataContainer.getCoordinatesList());
-        List<Location> savedLocations = locationService.saveAll(dataContainer.getLocationList());
-        List<Person> savedPersons = personService.saveAll(dataContainer.getPersonList());
+        // Пакетное сохранение
+        List<Coordinates> savedCoordinates = coordinatesService.saveAll(coordinatesList);
+        List<Location> savedLocations = locationService.saveAll(locationList);
+        List<Person> savedPersons = personService.saveAll(personList);
+
         // Связывание StudyGroup с сохраненными объектами
-        for (int i = 0; i < dataContainer.getStudyGroupList().size(); i++) {
-            StudyGroup studyGroup = dataContainer.getStudyGroupList().get(i);
+        for (int i = 0; i < studyGroupList.size(); i++) {
+            StudyGroup studyGroup = studyGroupList.get(i);
             studyGroup.setCoordinates(savedCoordinates.get(i));
             studyGroup.setGroupAdmin(savedPersons.get(i));
         }
-        studyGroupService.saveAll(dataContainer.getStudyGroupList());
 
-        return dataContainer.getStudyGroupList().size();
+        // Пакетное сохранение StudyGroup
+        studyGroupService.saveAll(studyGroupList);
+
+        return studyGroupList.size();
     }
 
-    private Coordinates createCoordinates(Map<String, Object> group) {
-        Map<String, Object> coordinatesData = (Map<String, Object>) group.get("coordinates");
-        Coordinates coordinates = new Coordinates();
-        coordinates.setX(((Number) coordinatesData.get("x")).floatValue());
-        coordinates.setY(((Number) coordinatesData.get("y")).doubleValue());
-        return coordinatesService.createCoordinates(coordinates);
-    }
 
-    private Person createGroupAdmin(Map<String, Object> group) {
-        Map<String, Object> adminData = (Map<String, Object>) group.get("group_admin");
-        Map<String, Object> locationData = (Map<String, Object>) adminData.get("location");
-
-        Location location = new Location();
-        location.setX(((Number) locationData.get("x")).floatValue());
-        location.setY(((Number) locationData.get("y")).intValue());
-        location.setName((String) locationData.get("name"));
-        Location savedLocation = locationService.createLocation(location);
-
-        PersonDTO personDTO = new PersonDTO();
-        personDTO.setName((String) adminData.get("name"));
-        personDTO.setEyeColor((String) adminData.get("eye_color"));
-        personDTO.setHairColor((String) adminData.get("hair_color"));
-        personDTO.setWeight(((Number) adminData.get("weight")).floatValue());
-        personDTO.setNationality((String) adminData.get("nationality"));
-        personDTO.setLocationId(savedLocation.getId());
-
-        return personService.createPerson(personService.fromDTO(personDTO));
-    }
-
-    private void createStudyGroup(Map<String, Object> group, Coordinates coordinates, Person admin) {
-        StudyGroupDTO groupDTO = new StudyGroupDTO();
-        groupDTO.setName((String) group.get("name"));
-        groupDTO.setCoordinatesId(coordinates.getId());
-        groupDTO.setGroupAdminId(admin.getId());
-        groupDTO.setStudentsCount(((Number) group.get("students_count")).intValue());
-        groupDTO.setExpelledStudents(((Number) group.get("expelled_students")).intValue());
-        groupDTO.setShouldBeExpelled(((Number) group.get("should_be_expelled")).longValue());
-        groupDTO.setTransferredStudents(((Number) group.get("transferred_students")).longValue());
-        groupDTO.setFormOfEducation((String) group.get("form_of_education"));
-        groupDTO.setSemesterEnum((String) group.get("semester_enum"));
-        studyGroupService.createStudyGroup(groupDTO);
-    }
 }

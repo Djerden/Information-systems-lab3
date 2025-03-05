@@ -1,48 +1,26 @@
 package com.djeno.backend_lab1.controllers;
 
 import com.djeno.backend_lab1.DTO.ImportHistoryDTO;
-import com.djeno.backend_lab1.DTO.PersonDTO;
-import com.djeno.backend_lab1.DTO.StudyGroupDTO;
-import com.djeno.backend_lab1.exceptions.DublicateFileException;
 import com.djeno.backend_lab1.exceptions.TooManyRequestsException;
-import com.djeno.backend_lab1.models.*;
-import com.djeno.backend_lab1.models.enums.ImportStatus;
-import com.djeno.backend_lab1.service.ImportService;
 import com.djeno.backend_lab1.service.MinioService;
 import com.djeno.backend_lab1.service.UserRequestLimiter;
 import com.djeno.backend_lab1.service.UserService;
 import com.djeno.backend_lab1.service.data.*;
-import com.djeno.backend_lab1.service.transactions.MinioTransactionParticipant;
-import com.djeno.backend_lab1.service.transactions.PostgresTransactionParticipant;
-import com.djeno.backend_lab1.service.transactions.TransactionCoordinator;
-import com.djeno.backend_lab1.service.transactions.TransactionParticipant;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.djeno.backend_lab1.service.saga.listeners.ImportHistoryEventListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 
@@ -53,14 +31,13 @@ public class ImportController {
 
     private final UserService userService;
     private final ImportHistoryService importHistoryService;
-    private final ImportService importService;
     private final UserRequestLimiter userRequestLimiter;
     private final MinioService minioService;
+    private final ImportHistoryEventListener importHistoryEventListener;
 
     private final Semaphore semaphore = new Semaphore(20); // Максимум запросов с файлами до 6мб
 
     @PostMapping(value = "/yaml", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Transactional(isolation = Isolation.SERIALIZABLE) //Isolation.READ_UNCOMMITTED)
     public ResponseEntity<?> importYaml(@RequestParam("file") MultipartFile file) throws IOException, ExecutionException, InterruptedException {
 
         if (!semaphore.tryAcquire()) {
@@ -72,33 +49,12 @@ public class ImportController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid file type. Only .yaml or .yml files are allowed.");
         }
 
-        User currentUser = userService.getCurrentUser();
-        Long userId = currentUser.getId();
-        ImportHistory importHistory = null;
+        Long userId = userService.getCurrentUser().getId();
 
         try {
             userRequestLimiter.acquirePermission(userId);
 
-            importHistory = ImportHistory.builder()
-                    .user(currentUser)
-                    .status(ImportStatus.PROCESSING)
-                    .timestamp(LocalDateTime.now())
-                    .addedObjects(0)
-                    .fileName(filename)
-                    .fileUrl(null)
-                    .build();
-            importHistory = importHistoryService.saveImportHistory(importHistory);
-
-            TransactionParticipant minioParticipant = new MinioTransactionParticipant(minioService, file, importHistory);
-            TransactionParticipant postgresParticipant = new PostgresTransactionParticipant(importService, file, importHistory);
-            TransactionCoordinator coordinator = new TransactionCoordinator();
-            coordinator.addParticipant(minioParticipant);
-            coordinator.addParticipant(postgresParticipant);
-            coordinator.execute();
-
-            importHistory.setStatus(ImportStatus.SUCCESS);
-
-            importHistoryService.saveImportHistory(importHistory);
+            importHistoryEventListener.createRecordImportHistory(file);
 
             semaphore.release();
             userRequestLimiter.releasePermission(userId);
@@ -108,31 +64,7 @@ public class ImportController {
         } catch (TooManyRequestsException e) {
             semaphore.release();
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(e.getMessage());
-        } catch (DublicateFileException e) {
-            if(importHistory != null) {
-                importHistory.setStatus(ImportStatus.FAILED);
-                importHistory.setAddedObjects(0);
-                importHistory.setFileUrl(null);
-                try {
-                    importHistoryService.saveImportHistory(importHistory);
-                } catch (Exception e1) {
-                    System.out.println("Обновить состояние истории не возможно, Postgres не откликается");
-                }
-            }
-            semaphore.release();
-            userRequestLimiter.releasePermission(userId);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
-            if (importHistory != null) {
-                importHistory.setStatus(ImportStatus.FAILED);
-                importHistory.setAddedObjects(0);
-                importHistory.setFileUrl(null);
-                try {
-                    importHistoryService.saveImportHistory(importHistory);
-                } catch (Exception e1) {
-                    System.out.println("Обновить состояние истории не возможно, Postgres не откликается");
-                }
-            }
             semaphore.release();
             userRequestLimiter.releasePermission(userId);
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
@@ -168,7 +100,7 @@ public class ImportController {
     @GetMapping("/download/{fileUrl}")
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String fileUrl) {
         try {
-            InputStream inputStream = minioService.downloadFile(fileUrl, "imported-files");
+            InputStream inputStream = minioService.downloadFile(fileUrl, MinioService.IMPORTED_FILES);
 
             InputStreamResource resource = new InputStreamResource(inputStream);
 

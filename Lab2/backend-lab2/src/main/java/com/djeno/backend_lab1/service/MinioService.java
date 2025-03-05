@@ -16,7 +16,7 @@ import java.util.UUID;
 @Service
 public class MinioService {
     private final MinioClient minioClient;
-    // private final String bucketName = "imported-files";
+    public static final String IMPORTED_FILES = "imported-files";
 
     public MinioService(@Value("${minio.endpoint}") String endpoint,
                         @Value("${minio.accessKey}") String accessKey,
@@ -49,21 +49,6 @@ public class MinioService {
         }
     }
 
-    public void testUploadFile(MultipartFile file) {
-
-        try {
-            String bucketName = "test-bucket";
-            createBucketIfNotExist(bucketName);
-
-            String fileUrl = uploadFile(file, bucketName); // Записываем файл
-            deleteFile(fileUrl, bucketName); // Удаляем файл
-
-            System.out.println("Тестовая загрузка файла в Minio успешно выполнена");
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при тестовой загрузке файла в Minio: " + e.getMessage());
-        }
-    }
-
     @SneakyThrows
     public InputStream downloadFile(String uniqueFileName, String bucketName) {
         createBucketIfNotExist(bucketName);
@@ -75,19 +60,15 @@ public class MinioService {
                         .build());
     }
 
+    @SneakyThrows
     public void deleteFile(String uniqueFileName, String bucketName) {
         createBucketIfNotExist(bucketName);
 
-        try {
-            minioClient.removeObject(
-                    RemoveObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(uniqueFileName)
-                            .build());
-        } catch (MinioException | IOException e) {
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+        minioClient.removeObject(
+                RemoveObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(uniqueFileName)
+                        .build());
     }
 
     // Метод для создания бакета, если он не существовал
@@ -97,4 +78,21 @@ public class MinioService {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
         }
     }
+
+
+//    Метод остался от транзакций
+//    public void testUploadFile(MultipartFile file) {
+//
+//        try {
+//            String bucketName = "test-bucket";
+//            createBucketIfNotExist(bucketName);
+//
+//            String fileUrl = uploadFile(file, bucketName); // Записываем файл
+//            deleteFile(fileUrl, bucketName); // Удаляем файл
+//
+//            System.out.println("Тестовая загрузка файла в Minio успешно выполнена");
+//        } catch (Exception e) {
+//            throw new RuntimeException("Ошибка при тестовой загрузке файла в Minio: " + e.getMessage());
+//        }
+//    }
 }
