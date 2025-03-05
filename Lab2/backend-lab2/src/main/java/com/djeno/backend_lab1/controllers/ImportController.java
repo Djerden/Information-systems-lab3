@@ -2,11 +2,13 @@ package com.djeno.backend_lab1.controllers;
 
 import com.djeno.backend_lab1.DTO.ImportHistoryDTO;
 import com.djeno.backend_lab1.exceptions.TooManyRequestsException;
+import com.djeno.backend_lab1.models.ImportHistory;
 import com.djeno.backend_lab1.service.MinioService;
 import com.djeno.backend_lab1.service.UserRequestLimiter;
 import com.djeno.backend_lab1.service.UserService;
 import com.djeno.backend_lab1.service.data.*;
 import com.djeno.backend_lab1.service.saga.listeners.ImportHistoryEventListener;
+import com.djeno.backend_lab1.service.saga.listeners.MinioEventListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
@@ -34,6 +36,7 @@ public class ImportController {
     private final UserRequestLimiter userRequestLimiter;
     private final MinioService minioService;
     private final ImportHistoryEventListener importHistoryEventListener;
+    private final MinioEventListener minioEventListener;
 
     private final Semaphore semaphore = new Semaphore(20); // Максимум запросов с файлами до 6мб
 
@@ -44,8 +47,8 @@ public class ImportController {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Too many concurrent requests. Please try again later.");
         }
 
-        String filename = file.getOriginalFilename();
-        if (filename == null || (!filename.endsWith(".yaml") && !filename.endsWith(".yml"))) {
+        String fileName = file.getOriginalFilename();
+        if (fileName == null || (!fileName.endsWith(".yaml") && !fileName.endsWith(".yml"))) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid file type. Only .yaml or .yml files are allowed.");
         }
 
@@ -54,7 +57,8 @@ public class ImportController {
         try {
             userRequestLimiter.acquirePermission(userId);
 
-            importHistoryEventListener.createRecordImportHistory(file);
+            ImportHistory importHistory = importHistoryEventListener.createRecordImportHistory(fileName);
+            minioEventListener.handleHistoryCreatedEvent(file, importHistory);
 
             semaphore.release();
             userRequestLimiter.releasePermission(userId);

@@ -27,25 +27,25 @@ public class ImportHistoryEventListener {
 
 
     // Метод с которого начинается вся логика Саги
-    public void createRecordImportHistory(MultipartFile file) {
+    public ImportHistory createRecordImportHistory(String fileName) {
         User currentUser = userService.getCurrentUser();
-        String filename = file.getOriginalFilename();
 
         ImportHistory importHistoryRecord = ImportHistory.builder()
                 .user(currentUser)
                 .status(ImportStatus.PROCESSING)
                 .timestamp(LocalDateTime.now())
                 .addedObjects(0)
-                .fileName(filename)
+                .fileName(fileName)
                 .fileUrl(null)
                 .build();
 
         importHistoryRecord = importHistoryService.saveImportHistory(importHistoryRecord);
         System.out.println("Запись в истории импорта создана");
 
-        eventPublisher.publishEvent(new HistoryRecordCreatedEvent(file, importHistoryRecord));
+        return importHistoryRecord;
     }
 
+    @Async
     @EventListener
     public void handleDataUploadedEvent(DataUploadedEvent event) {
         ImportHistory importHistoryRecord = event.getImportHistoryRecord();
@@ -59,6 +59,7 @@ public class ImportHistoryEventListener {
         System.out.println("Данные записи в истории импорта обновлены SUCCESS");
     }
 
+    @Async
     @EventListener
     public void handleTransactionFailedEvent(TransactionFailedEvent event) {
         ImportHistory importHistoryRecord = event.getImportHistoryRecord();

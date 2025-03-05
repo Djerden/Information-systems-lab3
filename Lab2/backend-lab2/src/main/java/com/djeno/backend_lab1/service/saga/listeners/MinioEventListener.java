@@ -8,7 +8,9 @@ import com.djeno.backend_lab1.service.saga.events.TransactionFailedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Service
@@ -17,9 +19,9 @@ public class MinioEventListener {
     private final MinioService minioService;
     private final ApplicationEventPublisher eventPublisher;
 
-    @EventListener
-    public void handleHistoryCreatedEvent(HistoryRecordCreatedEvent event) {
-        ImportHistory importHistoryRecord = event.getImportHistoryRecord();
+
+    public void handleHistoryCreatedEvent(MultipartFile file, ImportHistory importHistoryRecord) {
+
         String fileUrl = null;
 
         try {
@@ -30,7 +32,7 @@ public class MinioEventListener {
         }
 
         try {
-            fileUrl = minioService.uploadFile(event.getFile(), MinioService.IMPORTED_FILES);
+            fileUrl = minioService.uploadFile(file, MinioService.IMPORTED_FILES);
             importHistoryRecord.setFileUrl(fileUrl);
             System.out.println("Minio: файл" + fileUrl + " загружен");
         } catch (Exception e) {
@@ -38,9 +40,10 @@ public class MinioEventListener {
             eventPublisher.publishEvent(new TransactionFailedEvent(fileUrl, importHistoryRecord));
             return;
         }
-        eventPublisher.publishEvent(new FileUploadedEvent(event.getFile(), fileUrl, importHistoryRecord));
+        eventPublisher.publishEvent(new FileUploadedEvent(fileUrl, importHistoryRecord));
     }
 
+    @Async
     @EventListener
     public void handleTransactionFailedEvent(TransactionFailedEvent event) {
         ImportHistory importHistoryRecord = event.getImportHistoryRecord();

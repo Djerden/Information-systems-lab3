@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HistoryRecordCreatedEvent {
+
     private MultipartFile file;
     private ImportHistory importHistoryRecord;
 }

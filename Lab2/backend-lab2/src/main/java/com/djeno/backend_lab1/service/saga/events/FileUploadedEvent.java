@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 public class FileUploadedEvent {
 
-    private MultipartFile file;
     private String fileUrl;
     private ImportHistory importHistoryRecord;
 }

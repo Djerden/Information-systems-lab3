@@ -46,11 +46,7 @@ public class ImportService {
     private final UserService userService;
 
     @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
-    public int importYamlData(MultipartFile file) throws IOException {
-
-        InputStream inputStream = file.getInputStream();
-
-        User user = userService.getCurrentUser();
+    public int importYamlData(InputStream inputStream, User user) throws IOException {
 
         List<Coordinates> coordinatesList = new ArrayList<>();
         List<Location> locationList = new ArrayList<>();
